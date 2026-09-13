@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>True Tone | Real-Time SIM Call Deepfake Voice Verification Cockpit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #070b14;
+      --bg-surface: #0c1322;
+      --bg-card: #111a2f;
+      --bg-card-hover: #16223d;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(99, 102, 241, 0.4);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --primary: #6366f1;
+      --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(12, 19, 34, 0.85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      box-shadow: 0 0 18px rgba(99, 102, 241, 0.4);
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    .badges {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .chip {
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .chip.pulse::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 8px var(--accent-emerald);
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Waveform canvas */
+    .canvas-box {
+      height: 140px;
+      background: #060911;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    #visualizer {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Score gauge */
+    .score-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .gauge-dial {
+      text-align: center;
+    }
+
+    .score-val {
+      font-family: var(--font-heading);
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1;
+      transition: color 0.3s ease;
+    }
+
+    .score-val.safe { color: var(--accent-emerald); }
+    .score-val.suspicious { color: var(--accent-amber); }
+    .score-val.critical { color: var(--accent-rose); }
+
+    .score-tag {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      margin-top: 0.4rem;
+      display: inline-block;
+    }
+
+    .score-tag.safe { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+    .score-tag.suspicious { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+    .score-tag.critical { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+
+    /* Breakdown bars */
+    .metric-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+    }
+
+    .metric-bar-bg {
+      height: 8px;
+      background: var(--bg-card);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .metric-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.4s ease, background 0.4s ease;
+    }
+
+    /* Action Banner */
+    .action-alert {
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius-md);
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .action-alert.safe {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: var(--accent-emerald);
+    }
+
+    .action-alert.suspicious {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: var(--accent-amber);
+    }
+
+    .action-alert.critical {
+      background: rgba(244, 63, 94, 0.1);
+      border-color: rgba(244, 63, 94, 0.3);
+      color: var(--accent-rose);
+      animation: alert-pulse 2s infinite;
+    }
+
+    @keyframes alert-pulse {
+      0%, 100% { box-shadow: 0 0 10px rgba(244, 63, 94, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(244, 63, 94, 0.5); }
+    }
+
+    /* Simulator controls */
+    .sample-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .btn-sample {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.75rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-sample:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+      border-color: var(--primary);
+    }
+
+    .btn-sample.active {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      background: var(--bg-card);
+      transition: all 0.2s ease;
+      margin-bottom: 1.25rem;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--primary);
+      background: var(--bg-card-hover);
+    }
+
+    .telecom-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--bg-card-hover);
+      transition: .3s;
+      border-radius: 24px;
+      border: 1px solid var(--border-subtle);
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    .btn-primary {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      padding: 0.85rem 1.5rem;
+      border-radius: var(--radius-md);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(99, 102, 241, 0.4);
+    }
+
+    /* Live Telemetry Log */
+    .log-terminal {
+      background: #060911;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #94a3b8;
+      height: 180px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+
+    .log-line.warn { color: var(--accent-amber); }
+    .log-line.danger { color: var(--accent-rose); font-weight: 600; }
+    .log-line.info { color: var(--accent-cyan); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🛡️</div>
+      <div>
+        <div class="brand-title">TRUE TONE</div>
+        <div class="brand-sub">SIM-to-SIM Call Deepfake Interception Cockpit</div>
+      </div>
+    </div>
+    <div class="badges">
+      <span class="chip pulse">ENGINE READY</span>
+      <span class="chip">TELECOM G.711 / AMR</span>
+      <span class="chip">P99 &lt; 50MS</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid-2">
+      <!-- Left Column: Verification HUD -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span>⚡</span> Real-Time Verification Cockpit</h2>
+          <span class="chip" id="ws-status">● Live Stream Ready</span>
+        </div>
+
+        <div class="canvas-box">
+          <canvas id="visualizer"></canvas>
+        </div>
+
+        <div class="score-container">
+          <div class="gauge-dial">
+            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Composite Spoof Risk</div>
+            <div class="score-val safe" id="score-val">0.05</div>
+            <div class="score-tag safe" id="score-tag">VERIFIED HUMAN</div>
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-secondary); line-height:1.6;">
+            <div>Latency: <strong id="metric-latency" style="color:var(--text-primary);">32 ms</strong></div>
+            <div>Speech Detected: <strong id="metric-speech" style="color:var(--accent-emerald);">Yes (Active)</strong></div>
+            <div>Cellular Codec: <strong style="color:var(--accent-cyan);">AMR / G.711 μ-law</strong></div>
+          </div>
+        </div>
+
+        <!-- Metric Bars -->
+        <div class="metric-row">
+          <div class="metric-header">
+            <span>Acoustic & Spectral Model (LFCC Multi-Filterbank)</span>
+            <span id="acoustic-val">0.06</span>
+          </div>
+          <div class="metric-bar-bg">
+            <div class="metric-bar-fill" id="acoustic-bar" style="width: 6%; background: var(--accent-emerald);"></div>
+          </div>
+        </div>
+
+        <div class="metric-row">
+          <div class="metric-header">
+            <span>Phase Inconsistency & Group Delay Entropy</span>
+            <span id="phase-val">0.04</span>
+          </div>
+          <div class="metric-bar-bg">
+            <div class="metric-bar-fill" id="phase-bar" style="width: 4%; background: var(--accent-emerald);"></div>
+          </div>
+        </div>
+
+        <div class="metric-row">
+          <div class="metric-header">
+            <span>Prosody & Biological Micro-Jitter Verifier</span>
+            <span id="prosody-val">0.05</span>
+          </div>
+          <div class="metric-bar-bg">
+            <div class="metric-bar-fill" id="prosody-bar" style="width: 5%; background: var(--accent-emerald);"></div>
+          </div>
+        </div>
+
+        <div class="action-alert safe" id="action-banner">
+          <span>✓</span> VERIFIED BONAFIDE HUMAN CALLER • ALLOW CALL STREAM
+        </div>
+      </section>
+
+      <!-- Right Column: Interception Simulator & Audio Tester -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span>🧪</span> Call Interception & Attack Simulator</h2>
+          <span class="chip">Preset Testbeds</span>
+        </div>
+
+        <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:1.25rem;">
+          Select a cellular call scenario or upload a WAV/MP3 recording to test real-time interception, decoding, and forensic classification:
+        </p>
+
+        <div class="sample-grid">
+          <button class="btn-sample active" data-scenario="bonafide">
+            <span style="font-size:1.25rem;">👤</span>
+            <span>Bonafide Human</span>
+          </button>
+          <button class="btn-sample" data-scenario="elevenlabs">
+            <span style="font-size:1.25rem;">🤖</span>
+            <span>ElevenLabs Clone</span>
+          </button>
+          <button class="btn-sample" data-scenario="rvc">
+            <span style="font-size:1.25rem;">🎭</span>
+            <span>Voice Conversion</span>
+          </button>
+        </div>
+
+        <div class="telecom-toggle-row">
+          <div>
+            <div style="font-weight:600;">Simulate Cellular Telephony Channel</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Applies 8kHz G.711 μ-law companding, bandpass (300-3400Hz), & packet loss</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggle-telecom" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="upload-zone" id="drop-zone">
+          <input type="file" id="audio-input" accept="audio/*" style="display:none;">
+          <div style="font-size:1.5rem; margin-bottom:0.4rem;">📁</div>
+          <div style="font-weight:600; font-size:0.92rem;">Drop Cellular Call Recording Here</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Supports WAV, MP3, FLAC, OGG (8kHz–48kHz)</div>
+        </div>
+
+        <div style="margin-top:1rem;">
+          <div style="font-size:0.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.5rem;">Live Telemetry Stream Log</div>
+          <div class="log-terminal" id="terminal-log">
+            <div class="log-line info">[System] True Tone Forensics Engine initialized.</div>
+            <div class="log-line info">[SIPREC] Connected to virtual IMS gateway tap.</div>
+            <div class="log-line">[Stream] Ingesting 16-bit linear PCM @ 16kHz...</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+    let phase = 0;
+    let currentScenario = 'bonafide';
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const presets = {
+      bonafide: {
+        score: '0.05',
+        smoothed: '0.05',
+        status: 'VERIFIED HUMAN',
+        statusClass: 'safe',
+        acoustic: '0.06',
+        phaseScore: '0.04',
+        prosody: '0.05',
+        action: 'VERIFIED BONAFIDE HUMAN CALLER • ALLOW CALL STREAM',
+        waveColor: '#10b981',
+        jitterFreq: 0.15
+      },
+      elevenlabs: {
+        score: '0.94',
+        smoothed: '0.92',
+        status: 'CRITICAL SPOOF',
+        statusClass: 'critical',
+        acoustic: '0.96',
+        phaseScore: '0.93',
+        prosody: '0.88',
+        action: 'CRITICAL SPOOF DETECTED • TRIGGER IN-CALL USER ALERT & BLOCK TRANSACTION',
+        waveColor: '#f43f5e',
+        jitterFreq: 0.95
+      },
+      rvc: {
+        score: '0.82',
+        smoothed: '0.80',
+        status: 'HIGH SUSPICION',
+        statusClass: 'suspicious',
+        acoustic: '0.81',
+        phaseScore: '0.85',
+        prosody: '0.78',
+        action: 'VOICE CONVERSION DETECTED • TRIGGER STEP-UP BIOMETRIC MFA',
+        waveColor: '#f59e0b',
+        jitterFreq: 0.70
+      }
+    };
+
+    function updateUI(cfg) {
+      const scoreVal = document.getElementById('score-val');
+      const scoreTag = document.getElementById('score-tag');
+      const acousticVal = document.getElementById('acoustic-val');
+      const acousticBar = document.getElementById('acoustic-bar');
+      const phaseVal = document.getElementById('phase-val');
+      const phaseBar = document.getElementById('phase-bar');
+      const prosodyVal = document.getElementById('prosody-val');
+      const prosodyBar = document.getElementById('prosody-bar');
+      const actionBanner = document.getElementById('action-banner');
+
+      scoreVal.textContent = cfg.smoothed || cfg.score;
+      scoreVal.className = 'score-val ' + cfg.statusClass;
+      scoreTag.textContent = cfg.status;
+      scoreTag.className = 'score-tag ' + cfg.statusClass;
+
+      acousticVal.textContent = cfg.acoustic;
+      acousticBar.style.width = (parseFloat(cfg.acoustic) * 100) + '%';
+      acousticBar.style.background = cfg.waveColor;
+
+      phaseVal.textContent = cfg.phaseScore;
+      phaseBar.style.width = (parseFloat(cfg.phaseScore) * 100) + '%';
+      phaseBar.style.background = cfg.waveColor;
+
+      prosodyVal.textContent = cfg.prosody;
+      prosodyBar.style.width = (parseFloat(cfg.prosody) * 100) + '%';
+      prosodyBar.style.background = cfg.waveColor;
+
+      actionBanner.textContent = cfg.action;
+      actionBanner.className = 'action-alert ' + cfg.statusClass;
+    }
+
+    function addLog(text, type = '') {
+      const term = document.getElementById('terminal-log');
+      const line = document.createElement('div');
+      line.className = 'log-line ' + type;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+      term.appendChild(line);
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function renderWaveform() {
+      ctx.fillStyle = '#060911';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const cfg = presets[currentScenario];
+      const w = canvas.width;
+      const h = canvas.height;
+      const midY = h / 2;
+
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = cfg.waveColor;
+      ctx.beginPath();
+
+      for (let x = 0; x < w; x++) {
+        let y = midY;
+        if (currentScenario === 'bonafide') {
+          y += Math.sin((x * 0.03) + phase) * 20 + Math.cos((x * 0.01) - phase * 0.5) * 15;
+        } else if (currentScenario === 'elevenlabs') {
+          const base = Math.sin((x * 0.025) + phase) * 25;
+          const vocoderArtifact = (Math.sin(x * 0.35 + phase * 5) > 0.5 ? 6 : 0);
+          y += base + vocoderArtifact;
+        } else {
+          y += Math.sin((x * 0.03) + phase) * 18 + (Math.sin(x * 0.15 + phase * 2) * 9);
+        }
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      phase += 0.05;
+      requestAnimationFrame(renderWaveform);
+    }
+    renderWaveform();
+
+    // Preset Buttons
+    document.querySelectorAll('.btn-sample').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.btn-sample').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const key = btn.getAttribute('data-scenario');
+        currentScenario = key;
+        const cfg = presets[key];
+        updateUI(cfg);
+
+        if (key === 'bonafide') {
+          addLog('Switched to Bonafide Human voice stream. Natural micro-jitter verified.', 'info');
+        } else if (key === 'elevenlabs') {
+          addLog('ALERT: Neural vocoder high-frequency ripple detected. Pitch variance = 0.02.', 'danger');
+        } else {
+          addLog('WARNING: Voice Conversion acoustic mismatch detected. Group delay anomaly = 0.85.', 'warn');
+        }
+      });
+    });
+
+    // File Upload via REST API
+    const dropZone = document.getElementById('drop-zone');
+    const audioInput = document.getElementById('audio-input');
+
+    dropZone.addEventListener('click', () => audioInput.click());
+    audioInput.addEventListener('change', async (e) => {
+      if (!e.target.files.length) return;
+      const file = e.target.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('simulate_telecom', document.getElementById('toggle-telecom').checked);
+
+      addLog(`Uploading '${file.name}' for forensic telephony analysis...`, 'info');
+
+      try {
+        const resp = await fetch('/v1/analyze/file', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await resp.json();
+        addLog(`Analysis complete. Risk: ${data.overall_risk_level} (${(data.deepfake_probability * 100).toFixed(1)}%)`,
+               data.overall_risk_level === 'CRITICAL' ? 'danger' : data.overall_risk_level === 'SUSPICIOUS' ? 'warn' : 'info');
+
+        const isCrit = data.overall_risk_level === 'CRITICAL';
+        const isSusp = data.overall_risk_level === 'SUSPICIOUS';
+
+        updateUI({
+          score: data.deepfake_probability,
+          smoothed: data.deepfake_probability,
+          status: data.overall_risk_level,
+          statusClass: isCrit ? 'critical' : isSusp ? 'suspicious' : 'safe',
+          acoustic: data.forensic_breakdown?.acoustic_score || 0.1,
+          phaseScore: data.forensic_breakdown?.phase_score || 0.1,
+          prosody: data.forensic_breakdown?.prosody_score || 0.1,
+          action: data.recommended_action,
+          waveColor: isCrit ? '#f43f5e' : isSusp ? '#f59e0b' : '#10b981'
+        });
+      } catch (err) {
+        addLog(`Upload error: ${err.message}`, 'danger');
+      }
+    });
+  </script>
+</body>
+</html>
