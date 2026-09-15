@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" font-family="Arial, Helvetica, sans-serif">
+  <!-- Clean White Presentation Canvas -->
+  <rect width="1920" height="1080" fill="#ffffff" />
+
+  <!-- ========================================================================= -->
+  <!-- HEADER SECTION                                                            -->
+  <!-- ========================================================================= -->
+  <g id="header">
+    <!-- Double Concentric Circle Logo -->
+    <circle cx="55" cy="56" r="22" fill="none" stroke="#000000" stroke-width="3.5" />
+    <circle cx="55" cy="56" r="12" fill="none" stroke="#000000" stroke-width="3" />
+    <circle cx="55" cy="56" r="4.5" fill="#000000" />
+
+    <!-- Header Titles -->
+    <text x="92" y="52" font-size="26" font-weight="900" letter-spacing="2" fill="#000000">TRUE TONE</text>
+    <text x="92" y="72" font-size="11" font-weight="700" letter-spacing="1" fill="#4b5563">AI-POWERED SIM-TO-SIM VOICE CALL DEEPFAKE DETECTION • SMART INDIA HACKATHON</text>
+
+    <!-- Technical Flow Badge Pill -->
+    <rect x="1080" y="30" width="220" height="46" rx="23" fill="#000000" />
+    <text x="1190" y="59" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="1">TECHNICAL FLOW</text>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- 1. LEFT INPUT SOURCES (Solid Black Pills)                                 -->
+  <!-- ========================================================================= -->
+  <g id="input-sources">
+    <!-- Source 1: Cellular Carrier -->
+    <g id="input-carrier">
+      <rect x="35" y="330" width="150" height="44" rx="22" fill="#000000" />
+      <text x="110" y="357" font-size="10.5" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">CELLULAR CARRIER</text>
+    </g>
+
+    <!-- Source 2: Smartphone App -->
+    <g id="input-smartphone">
+      <rect x="35" y="520" width="150" height="44" rx="22" fill="#000000" />
+      <text x="110" y="547" font-size="10.5" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">SMARTPHONE APP</text>
+    </g>
+
+    <!-- Source 3: GSM Gateway -->
+    <g id="input-gateway">
+      <rect x="35" y="710" width="150" height="44" rx="22" fill="#000000" />
+      <text x="110" y="737" font-size="10.5" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">GSM / SIP GATEWAY</text>
+    </g>
+
+    <!-- Connecting Curves to Central Ingestion Node -->
+    <path d="M 185 352 C 225 352, 225 542, 260 542" fill="none" stroke="#000000" stroke-width="2.5" />
+    <polygon points="265,542 255,537 255,547" fill="#000000" />
+
+    <path d="M 185 542 L 260 542" fill="none" stroke="#000000" stroke-width="2.5" />
+    <polygon points="265,542 255,537 255,547" fill="#000000" />
+
+    <path d="M 185 732 C 225 732, 225 542, 260 542" fill="none" stroke="#000000" stroke-width="2.5" />
+    <polygon points="265,542 255,537 255,547" fill="#000000" />
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- 2. CENTRAL ACQUIRE NODE                                                   -->
+  <!-- ========================================================================= -->
+  <g id="central-node">
+    <rect x="270" y="512" width="190" height="60" rx="30" fill="#ffffff" stroke="#000000" stroke-width="2.8" />
+    <!-- Phone symbol -->
+    <rect x="292" y="527" width="15" height="26" rx="3" fill="none" stroke="#000000" stroke-width="2" />
+    <circle cx="299.5" cy="548" r="1.5" fill="#000000" />
+    <text x="320" y="548" font-size="12" font-weight="800" fill="#000000" letter-spacing="0.5">ACQUIRE STREAM</text>
+
+    <!-- Branching Curves to the 3 Workstreams -->
+    <path d="M 460 542 C 495 542, 495 235, 525 235" fill="none" stroke="#000000" stroke-width="2.5" />
+    <polygon points="530,235 520,230 520,240" fill="#000000" />
+
+    <path d="M 460 542 L 525 542" fill="none" stroke="#000000" stroke-width="2.5" />
+    <polygon points="530,542 520,537 520,547" fill="#000000" />
+
+    <path d="M 460 542 C 495 542, 495 850, 525 850" fill="none" stroke="#000000" stroke-width="2.5" />
+    <polygon points="530,850 520,845 520,855" fill="#000000" />
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- STREAM 1: TELEPHONY CODEC & VAD WORKSTREAM                                 -->
+  <!-- ========================================================================= -->
+  <g id="stream-1-telephony">
+    <!-- Diamond 1: ACTIVE CALL AUDIO? -->
+    <polygon points="590,190 660,235 590,280 520,235" fill="#000000" />
+    <text x="590" y="230" font-size="9.5" font-weight="800" fill="#ffffff" text-anchor="middle">ACTIVE CALL</text>
+    <text x="590" y="244" font-size="9.5" font-weight="800" fill="#ffffff" text-anchor="middle">AUDIO?</text>
+
+    <!-- Vertical Branch: YES to PROCESS CODEC -->
+    <path d="M 590 280 L 590 340" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="590,345 585,335 595,335" fill="#000000" />
+    <text x="602" y="312" font-size="10" font-weight="800" fill="#000000">YES</text>
+
+    <rect x="515" y="347" width="150" height="42" rx="21" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+    <text x="590" y="373" font-size="10.5" font-weight="800" fill="#000000" text-anchor="middle">PROCESS CODEC</text>
+
+    <!-- Ring Buffer Cylinder Database Icon -->
+    <g transform="translate(450, 305)">
+      <path d="M0,9 C0,4 14,0 30,0 C46,0 60,4 60,9 L60,34 C60,39 46,43 30,43 C14,43 0,39 0,34 Z" fill="#ffffff" stroke="#000000" stroke-width="2" />
+      <path d="M0,9 C0,14 14,18 30,18 C46,18 60,14 60,9" fill="none" stroke="#000000" stroke-width="2" />
+      <path d="M0,20 C0,25 14,29 30,29 C46,29 60,25 60,20" fill="none" stroke="#000000" stroke-width="2" />
+      <text x="30" y="56" font-size="8.5" font-weight="800" fill="#000000" text-anchor="middle">RING BUFFER</text>
+      <text x="30" y="67" font-size="8" font-weight="700" fill="#4b5563" text-anchor="middle">3-5s CAPACITY</text>
+    </g>
+    <path d="M 515 368 L 490 368" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="485,368 495,363 495,373" fill="#000000" />
+
+    <!-- Horizontal Branch: No to VAD & CODEC ENGINE -->
+    <path d="M 660 235 L 740 235" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="745,235 735,230 735,240" fill="#000000" />
+    <text x="682" y="226" font-size="10" font-weight="800" fill="#000000">No</text>
+
+    <!-- Engine 1: VAD & CODEC ENGINE -->
+    <rect x="747" y="213" width="165" height="46" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+    <rect x="757" y="221" width="20" height="28" rx="2" fill="none" stroke="#000000" stroke-width="1.8" />
+    <line x1="762" y1="228" x2="772" y2="228" stroke="#000000" stroke-width="1.5" />
+    <line x1="762" y1="234" x2="772" y2="234" stroke="#000000" stroke-width="1.5" />
+    <circle cx="767" cy="242" r="1.5" fill="#000000" />
+    <text x="786" y="241" font-size="10" font-weight="800" fill="#000000">VAD &amp; CODEC ENGINE</text>
+
+    <!-- Database under Engine 1 -->
+    <g transform="translate(800, 305)">
+      <path d="M0,9 C0,4 14,0 30,0 C46,0 60,4 60,9 L60,34 C60,39 46,43 30,43 C14,43 0,39 0,34 Z" fill="#ffffff" stroke="#000000" stroke-width="2" />
+      <path d="M0,9 C0,14 14,18 30,18 C46,18 60,14 60,9" fill="none" stroke="#000000" stroke-width="2" />
+      <path d="M0,20 C0,25 14,29 30,29 C46,29 60,25 60,20" fill="none" stroke="#000000" stroke-width="2" />
+      <text x="30" y="56" font-size="8.5" font-weight="800" fill="#000000" text-anchor="middle">FETCH CHUNK</text>
+      <text x="30" y="67" font-size="8" font-weight="700" fill="#4b5563" text-anchor="middle">16k RESAMPLED</text>
+    </g>
+    <path d="M 830 305 L 830 265" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="830,260 825,270 835,270" fill="#000000" />
+
+    <!-- 4 Sub-branches branching out from Engine 1 -->
+    <path d="M 912 235 C 935 235, 940 125, 970 125" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="975,125 965,120 965,130" fill="#000000" />
+
+    <path d="M 912 235 C 935 235, 940 180, 970 180" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="975,180 965,175 965,185" fill="#000000" />
+
+    <path d="M 912 235 L 970 235" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="975,235 965,230 965,240" fill="#000000" />
+
+    <path d="M 912 235 C 935 235, 940 290, 970 290" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="975,290 965,285 965,295" fill="#000000" />
+
+    <!-- 4 Feature Pills -->
+    <rect x="978" y="106" width="180" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="992" y="130" font-size="12">⚡</text>
+    <text x="1010" y="130" font-size="9.5" font-weight="800" fill="#000000">G.711 μ-LAW / A-LAW</text>
+
+    <rect x="978" y="161" width="180" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="992" y="185" font-size="12">📡</text>
+    <text x="1010" y="185" font-size="9.5" font-weight="800" fill="#000000">AMR-NB &amp; AMR-WB</text>
+
+    <rect x="978" y="216" width="180" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="992" y="240" font-size="12">🎙️</text>
+    <text x="1010" y="240" font-size="9.5" font-weight="800" fill="#000000">SILERO VAD (p_speech)</text>
+
+    <rect x="978" y="271" width="180" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="992" y="295" font-size="12">🛡️</text>
+    <text x="1010" y="295" font-size="9.5" font-weight="800" fill="#000000">PACKET CONCEALMENT</text>
+
+    <!-- Decision Diamond: SPEECH >= 0.50? -->
+    <path d="M 1158 235 L 1205 235" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="1210,235 1200,230 1200,240" fill="#000000" />
+
+    <polygon points="1255,200 1305,235 1255,270 1205,235" fill="#000000" />
+    <text x="1255" y="231" font-size="9" font-weight="800" fill="#ffffff" text-anchor="middle">SPEECH</text>
+    <text x="1255" y="244" font-size="9" font-weight="800" fill="#ffffff" text-anchor="middle">&gt;= 0.50?</text>
+
+    <!-- Output YES to TRIGGER ML -->
+    <path d="M 1305 235 L 1345 235" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="1350,235 1340,230 1340,240" fill="#000000" />
+    <text x="1317" y="226" font-size="9.5" font-weight="800" fill="#000000">YES</text>
+
+    <rect x="1355" y="216" width="165" height="38" rx="19" fill="#000000" />
+    <text x="1437" y="240" font-size="9.5" font-weight="800" fill="#ffffff" text-anchor="middle">TRIGGER ML INFERENCE</text>
+
+    <!-- Output NO to DECAY TO BASELINE -->
+    <path d="M 1255 270 C 1255 305, 1310 305, 1345 305" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="1350,305 1340,300 1340,310" fill="#000000" />
+    <text x="1267" y="293" font-size="9.5" font-weight="800" fill="#000000">NO</text>
+
+    <rect x="1355" y="286" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="1437" y="310" font-size="9.5" font-weight="800" fill="#000000" text-anchor="middle">DECAY TO BASELINE</text>
+
+    <!-- Metadata Card: TELEPHONY SPECIFICATIONS -->
+    <g transform="translate(1560, 125)">
+      <rect width="210" height="175" rx="10" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+      <text x="16" y="26" font-size="10" font-weight="900" letter-spacing="0.5" fill="#000000">TELEPHONY SPECIFICATIONS</text>
+      <line x1="16" y1="33" x2="194" y2="33" stroke="#000000" stroke-width="1.2" />
+      <text x="16" y="54" font-size="9" font-family="'JetBrains Mono', monospace" fill="#374151">• Sampling: 8kHz / 16kHz</text>
+      <text x="16" y="74" font-size="9" font-family="'JetBrains Mono', monospace" fill="#374151">• POTS Bandpass: 300-3400Hz</text>
+      <text x="16" y="94" font-size="9" font-family="'JetBrains Mono', monospace" fill="#374151">• VoLTE Bandpass: 50-7000Hz</text>
+      <text x="16" y="114" font-size="9" font-family="'JetBrains Mono', monospace" fill="#374151">• Frame Size: 20ms / 25ms</text>
+      <text x="16" y="134" font-size="9" font-family="'JetBrains Mono', monospace" fill="#374151">• Quant: 8-bit Companding</text>
+      <text x="16" y="154" font-size="9" font-family="'JetBrains Mono', monospace" fill="#374151">• VAD Latency: &lt; 1.0 ms</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- STREAM 2: FEATURE EXTRACTION & PYTORCH ML PIPELINE                         -->
+  <!-- ========================================================================= -->
+  <g id="stream-2-ml">
+    <!-- Diamond 2: NEW 500ms CHUNK? -->
+    <polygon points="590,497 660,542 590,587 520,542" fill="#000000" />
+    <text x="590" y="537" font-size="9.5" font-weight="800" fill="#ffffff" text-anchor="middle">NEW 500ms</text>
+    <text x="590" y="551" font-size="9.5" font-weight="800" fill="#ffffff" text-anchor="middle">CHUNK?</text>
+
+    <!-- Vertical Branch: YES to SLICE 1.5s WINDOW -->
+    <path d="M 590 587 L 590 647" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="590,652 585,642 595,642" fill="#000000" />
+    <text x="602" y="619" font-size="10" font-weight="800" fill="#000000">YES</text>
+
+    <rect x="515" y="654" width="150" height="42" rx="21" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+    <text x="590" y="680" font-size="10.5" font-weight="800" fill="#000000" text-anchor="middle">SLICE 1.5s WINDOW</text>
+
+    <!-- Feature Cache Database Icon -->
+    <g transform="translate(450, 612)">
+      <path d="M0,9 C0,4 14,0 30,0 C46,0 60,4 60,9 L60,34 C60,39 46,43 30,43 C14,43 0,39 0,34 Z" fill="#ffffff" stroke="#000000" stroke-width="2" />
+      <path d="M0,9 C0,14 14,18 30,18 C46,18 60,14 60,9" fill="none" stroke="#000000" stroke-width="2" />
+      <path d="M0,20 C0,25 14,29 30,29 C46,29 60,25 60,20" fill="none" stroke="#000000" stroke-width="2" />
+      <text x="30" y="56" font-size="8.5" font-weight="800" fill="#000000" text-anchor="middle">FEATURE CACHE</text>
+      <text x="30" y="67" font-size="8" font-weight="700" fill="#4b5563" text-anchor="middle">133-DIM VECTOR</text>
+    </g>
+    <path d="M 515 675 L 490 675" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="485,675 495,670 495,680" fill="#000000" />
+
+    <!-- Horizontal Branch: No to PYTORCH ML ENGINE -->
+    <path d="M 660 542 L 740 542" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="745,542 735,537 735,547" fill="#000000" />
+    <text x="682" y="533" font-size="10" font-weight="800" fill="#000000">No</text>
+
+    <!-- Engine 2: PYTORCH ML ENGINE -->
+    <rect x="747" y="520" width="165" height="46" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+    <rect x="757" y="528" width="20" height="28" rx="2" fill="none" stroke="#000000" stroke-width="1.8" />
+    <line x1="762" y1="535" x2="772" y2="535" stroke="#000000" stroke-width="1.5" />
+    <line x1="762" y1="541" x2="772" y2="541" stroke="#000000" stroke-width="1.5" />
+    <circle cx="767" cy="549" r="1.5" fill="#000000" />
+    <text x="786" y="548" font-size="10" font-weight="800" fill="#000000">PYTORCH ML ENGINE</text>
+
+    <!-- Database under Engine 2 -->
+    <g transform="translate(800, 612)">
+      <path d="M0,9 C0,4 14,0 30,0 C46,0 60,4 60,9 L60,34 C60,39 46,43 30,43 C14,43 0,39 0,34 Z" fill="#ffffff" stroke="#000000" stroke-width="2" />
+      <path d="M0,9 C0,14 14,18 30,18 C46,18 60,14 60,9" fill="none" stroke="#000000" stroke-width="2" />
+      <path d="M0,20 C0,25 14,29 30,29 C46,29 60,25 60,20" fill="none" stroke="#000000" stroke-width="2" />
+      <text x="30" y="56" font-size="8.5" font-weight="800" fill="#000000" text-anchor="middle">FETCH EMBED</text>
+      <text x="30" y="67" font-size="8" font-weight="700" fill="#4b5563" text-anchor="middle">ANCHOR SESSION</text>
+    </g>
+    <path d="M 830 612 L 830 572" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="830,567 825,577 835,577" fill="#000000" />
+
+    <!-- 5 Sub-branches branching out from Engine 2 -->
+    <path d="M 912 542 C 935 542, 940 440, 970 440" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="975,440 965,435 965,445" fill="#000000" />
+
+    <path d="M 912 542 C 935 542, 940 490, 970 490" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="975,490 965,485 965,495" fill="#000000" />
+
+    <path d="M 912 542 L 970 542" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="975,542 965,537 965,547" fill="#000000" />
+
+    <path d="M 912 542 C 935 542, 940 594, 970 594" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="975,594 965,589 965,599" fill="#000000" />
+
+    <path d="M 912 542 C 935 542, 940 645, 970 645" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="975,645 965,640 965,650" fill="#000000" />
+
+    <!-- 5 Feature Capsules -->
+    <rect x="978" y="421" width="185" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="992" y="445" font-size="12">📊</text>
+    <text x="1010" y="445" font-size="9.5" font-weight="800" fill="#000000">MEL-SPEC (128x128)</text>
+
+    <rect x="978" y="471" width="185" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="992" y="495" font-size="12">📈</text>
+    <text x="1010" y="495" font-size="9.5" font-weight="800" fill="#000000">LFCC + DELTAS (60-D)</text>
+
+    <rect x="978" y="523" width="185" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="992" y="547" font-size="12">〰️</text>
+    <text x="1010" y="547" font-size="9.5" font-weight="800" fill="#000000">PHASE MGD ENTROPY</text>
+
+    <rect x="978" y="575" width="185" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="992" y="599" font-size="12">🎵</text>
+    <text x="1010" y="599" font-size="9.5" font-weight="800" fill="#000000">MICRO-JITTER (F0/HNR)</text>
+
+    <rect x="978" y="626" width="185" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="992" y="650" font-size="12">👤</text>
+    <text x="1010" y="650" font-size="9.5" font-weight="800" fill="#000000">ECAPA-TDNN (192-D)</text>
+
+    <!-- Convergence of features into CALCULATE RISK -->
+    <path d="M 1163 440 C 1195 440, 1195 645, 1225 645" fill="none" stroke="#000000" stroke-width="1.8" />
+    <path d="M 1163 490 C 1195 490, 1195 645, 1225 645" fill="none" stroke="#000000" stroke-width="1.8" />
+    <path d="M 1163 542 C 1195 542, 1195 645, 1225 645" fill="none" stroke="#000000" stroke-width="1.8" />
+    <path d="M 1163 594 C 1195 594, 1195 645, 1225 645" fill="none" stroke="#000000" stroke-width="1.8" />
+    <path d="M 1163 645 L 1225 645" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="1230,645 1220,640 1220,650" fill="#000000" />
+
+    <!-- CALCULATE RISK Node -->
+    <rect x="1233" y="626" width="140" height="38" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+    <text x="1303" y="643" font-size="9" font-weight="900" fill="#000000" text-anchor="middle">CALCULATE RISK</text>
+    <text x="1303" y="656" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#4b5563" text-anchor="middle">R = ∑ w_i · x_i</text>
+
+    <!-- Decision Diamond: RISK >= 0.70? -->
+    <path d="M 1373 645 L 1415 645" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="1420,645 1410,640 1410,650" fill="#000000" />
+
+    <polygon points="1465,610 1515,645 1465,680 1415,645" fill="#000000" />
+    <text x="1465" y="641" font-size="9" font-weight="800" fill="#ffffff" text-anchor="middle">RISK SCORE</text>
+    <text x="1465" y="654" font-size="9" font-weight="800" fill="#ffffff" text-anchor="middle">&gt;= 0.70?</text>
+
+    <!-- Output YES to CONFIRMED THREAT (Solid Black Capsule) -->
+    <path d="M 1515 645 L 1555 645" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="1560,645 1550,640 1550,650" fill="#000000" />
+    <text x="1527" y="636" font-size="9.5" font-weight="800" fill="#000000">YES</text>
+
+    <rect x="1565" y="626" width="155" height="38" rx="19" fill="#000000" />
+    <text x="1642" y="650" font-size="9.5" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="0.5">CONFIRMED THREAT</text>
+
+    <!-- Output NO to GLITCH FILTER (White Capsule) -->
+    <path d="M 1465 680 C 1465 715, 1520 715, 1555 715" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="1560,715 1550,710 1550,720" fill="#000000" />
+    <text x="1477" y="703" font-size="9.5" font-weight="800" fill="#000000">NO</text>
+
+    <rect x="1565" y="696" width="155" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="1642" y="720" font-size="9" font-weight="800" fill="#000000" text-anchor="middle">GLITCH FILTER (EMA)</text>
+
+    <!-- Metadata Card: RISK ENGINE WEIGHTS -->
+    <g transform="translate(1740, 520)">
+      <rect width="170" height="210" rx="10" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+      <text x="14" y="26" font-size="10" font-weight="900" letter-spacing="0.5" fill="#000000">RISK ENGINE WEIGHTS</text>
+      <line x1="14" y1="33" x2="156" y2="33" stroke="#000000" stroke-width="1.2" />
+      <text x="14" y="54" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• CNN Mel:   w₁ = 0.40</text>
+      <text x="14" y="74" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• Phase MGD: w₂ = 0.25</text>
+      <text x="14" y="94" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• ECAPA-TDNN:w₃ = 0.20</text>
+      <text x="14" y="114" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• Jitter F0: w₄ = 0.15</text>
+      <text x="14" y="134" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• EMA Factor: α = 0.35</text>
+      <text x="14" y="154" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• Safe:       R &lt; 0.40</text>
+      <text x="14" y="174" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• Suspicious: 0.4-0.7</text>
+      <text x="14" y="194" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• Critical:   R &gt;= 0.70</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- STREAM 3: DECISION & ALERT DISPATCH WORKSTREAM                             -->
+  <!-- ========================================================================= -->
+  <g id="stream-3-dispatch">
+    <!-- Diamond 3: ALERT LEVEL TRIGGERED? -->
+    <polygon points="590,805 660,850 590,895 520,850" fill="#000000" />
+    <text x="590" y="845" font-size="9.5" font-weight="800" fill="#ffffff" text-anchor="middle">ALERT LEVEL</text>
+    <text x="590" y="859" font-size="9.5" font-weight="800" fill="#ffffff" text-anchor="middle">TRIGGERED?</text>
+
+    <!-- Vertical Branch: YES to GENERATE AI BRIEF -->
+    <path d="M 590 895 L 590 955" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="590,960 585,950 595,950" fill="#000000" />
+    <text x="602" y="927" font-size="10" font-weight="800" fill="#000000">YES</text>
+
+    <rect x="515" y="962" width="150" height="42" rx="21" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+    <text x="590" y="988" font-size="10" font-weight="800" fill="#000000" text-anchor="middle">GENERATE AI BRIEF</text>
+
+    <!-- DPDP Audit Log Database Icon -->
+    <g transform="translate(450, 920)">
+      <path d="M0,9 C0,4 14,0 30,0 C46,0 60,4 60,9 L60,34 C60,39 46,43 30,43 C14,43 0,39 0,34 Z" fill="#ffffff" stroke="#000000" stroke-width="2" />
+      <path d="M0,9 C0,14 14,18 30,18 C46,18 60,14 60,9" fill="none" stroke="#000000" stroke-width="2" />
+      <path d="M0,20 C0,25 14,29 30,29 C46,29 60,25 60,20" fill="none" stroke="#000000" stroke-width="2" />
+      <text x="30" y="56" font-size="8.5" font-weight="800" fill="#000000" text-anchor="middle">ADD ALERT LOG</text>
+      <text x="30" y="67" font-size="8" font-weight="700" fill="#4b5563" text-anchor="middle">DPDP AUDIT</text>
+    </g>
+    <path d="M 515 983 L 490 983" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="485,983 495,978 495,988" fill="#000000" />
+
+    <!-- Horizontal Branch: No to DISPATCH ENGINE -->
+    <path d="M 660 850 L 740 850" fill="none" stroke="#000000" stroke-width="2.2" />
+    <polygon points="745,850 735,845 735,855" fill="#000000" />
+    <text x="682" y="841" font-size="10" font-weight="800" fill="#000000">No</text>
+
+    <!-- Engine 3: DISPATCH ENGINE -->
+    <rect x="747" y="828" width="165" height="46" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+    <rect x="757" y="836" width="20" height="28" rx="2" fill="none" stroke="#000000" stroke-width="1.8" />
+    <line x1="762" y1="843" x2="772" y2="843" stroke="#000000" stroke-width="1.5" />
+    <line x1="762" y1="849" x2="772" y2="849" stroke="#000000" stroke-width="1.5" />
+    <circle cx="767" cy="857" r="1.5" fill="#000000" />
+    <text x="786" y="856" font-size="10" font-weight="800" fill="#000000">DISPATCH ENGINE</text>
+
+    <!-- Database under Engine 3 -->
+    <g transform="translate(800, 920)">
+      <path d="M0,9 C0,4 14,0 30,0 C46,0 60,4 60,9 L60,34 C60,39 46,43 30,43 C14,43 0,39 0,34 Z" fill="#ffffff" stroke="#000000" stroke-width="2" />
+      <path d="M0,9 C0,14 14,18 30,18 C46,18 60,14 60,9" fill="none" stroke="#000000" stroke-width="2" />
+      <path d="M0,20 C0,25 14,29 30,29 C46,29 60,25 60,20" fill="none" stroke="#000000" stroke-width="2" />
+      <text x="30" y="56" font-size="8.5" font-weight="800" fill="#000000" text-anchor="middle">FETCH LOG</text>
+      <text x="30" y="67" font-size="8" font-weight="700" fill="#4b5563" text-anchor="middle">TELEMETRY</text>
+    </g>
+    <path d="M 830 920 L 830 880" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="830,875 825,885 835,885" fill="#000000" />
+
+    <!-- 3 Dispatch Channels branching out -->
+    <path d="M 912 850 C 935 850, 940 805, 970 805" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="975,805 965,800 965,810" fill="#000000" />
+
+    <path d="M 912 850 L 970 850" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="975,850 965,845 965,855" fill="#000000" />
+
+    <path d="M 912 850 C 935 850, 940 895, 970 895" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="975,895 965,890 965,900" fill="#000000" />
+
+    <!-- 3 Dispatch Channel Pills -->
+    <rect x="978" y="786" width="185" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="992" y="810" font-size="12">📱</text>
+    <text x="1010" y="810" font-size="9.5" font-weight="800" fill="#000000">WEB &amp; IN-CALL HUD</text>
+
+    <rect x="978" y="831" width="185" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="992" y="855" font-size="12">📡</text>
+    <text x="1010" y="855" font-size="9.5" font-weight="800" fill="#000000">CARRIER SIP TONE</text>
+
+    <rect x="978" y="876" width="185" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2" />
+    <text x="992" y="900" font-size="12">🚨</text>
+    <text x="1010" y="900" font-size="9.5" font-weight="800" fill="#000000">BANK / SOC WEBHOOK</text>
+
+    <!-- Secondary Target Blocks -->
+    <path d="M 1163 805 L 1205 805" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="1210,805 1200,800 1200,810" fill="#000000" />
+    <rect x="1212" y="786" width="160" height="38" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+    <text x="1292" y="810" font-size="9.5" font-weight="800" fill="#000000" text-anchor="middle">FASTAPI WEBSOCKET</text>
+
+    <path d="M 1163 850 L 1205 850" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="1210,850 1200,845 1200,855" fill="#000000" />
+    <rect x="1212" y="831" width="160" height="38" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+    <text x="1292" y="855" font-size="9.5" font-weight="800" fill="#000000" text-anchor="middle">TWILIO / SIP GATEWAY</text>
+
+    <path d="M 1163 895 L 1205 895" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="1210,895 1200,890 1200,900" fill="#000000" />
+    <rect x="1212" y="876" width="160" height="38" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+    <text x="1292" y="900" font-size="9.5" font-weight="800" fill="#000000" text-anchor="middle">SOAR / REST WEBHOOK</text>
+
+    <!-- Connector to Dispatch Recipients Card -->
+    <path d="M 1372 805 L 1400 805" fill="none" stroke="#000000" stroke-width="2" />
+    <polygon points="1405,805 1395,800 1395,810" fill="#000000" />
+
+    <!-- Metadata Card 3: DISPATCH RECIPIENTS -->
+    <g transform="translate(1410, 775)">
+      <rect width="195" height="175" rx="10" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+      <text x="14" y="26" font-size="10" font-weight="900" letter-spacing="0.5" fill="#000000">DISPATCH RECIPIENTS</text>
+      <line x1="14" y1="33" x2="181" y2="33" stroke="#000000" stroke-width="1.2" />
+      <text x="14" y="54" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• Called Handset (SIM B)</text>
+      <text x="14" y="74" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• Bank Fraud Prevention Unit</text>
+      <text x="14" y="94" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• Telecom Carrier NOC</text>
+      <text x="14" y="114" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• In-Call Audible Alert</text>
+      <text x="14" y="134" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• Real-Time Incident Webhook</text>
+      <text x="14" y="154" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">• I4C Cybercrime Gateway</text>
+    </g>
+
+    <!-- Metadata Card 4: DEVOPS & SERVING INFRASTRUCTURE -->
+    <g transform="translate(1625, 775)">
+      <rect width="265" height="175" rx="10" fill="#ffffff" stroke="#000000" stroke-width="2.2" />
+      <text x="14" y="26" font-size="10" font-weight="900" letter-spacing="0.5" fill="#000000">DEVOPS &amp; INFRASTRUCTURE</text>
+      <line x1="14" y1="33" x2="251" y2="33" stroke="#000000" stroke-width="1.2" />
+      <text x="14" y="54" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">CONTAINERS : Docker &amp; K8s Helm Charts</text>
+      <text x="14" y="74" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">BACKEND    : FastAPI, Uvicorn (ASGI)</text>
+      <text x="14" y="94" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">ML RUNTIME : PyTorch, ONNX, TensorRT</text>
+      <text x="14" y="114" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">TELEPHONY  : Asterisk ARI / Twilio SIP</text>
+      <text x="14" y="134" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">METRICS    : Prometheus &amp; Grafana</text>
+      <text x="14" y="154" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#374151">COMPLIANCE : DPDP Act 2023 (Feature Logs)</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- CROSS-TIER TRIGGER (DASHED BEZIER CURVE)                                  -->
+  <!-- ========================================================================= -->
+  <g id="cross-tier-trigger">
+    <path d="M 1642 664 C 1642 740, 1150 740, 912 850" fill="none" stroke="#000000" stroke-width="2" stroke-dasharray="6,6" />
+    <polygon points="915,850 925,845 925,855" fill="#000000" />
+    <text x="1200" y="755" font-size="9" font-weight="800" fill="#000000" text-anchor="middle">Confirmed threat auto-triggers emergency in-call interruption &amp; transaction freeze</text>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- FOOTER BAR                                                                -->
+  <!-- ========================================================================= -->
+  <g id="footer">
+    <line x1="35" y1="1035" x2="1885" y2="1035" stroke="#000000" stroke-width="1.5" />
+    <text x="35" y="1060" font-size="9" font-weight="800" letter-spacing="1" fill="#000000">TRUE TONE • SMART INDIA HACKATHON • REAL-TIME SIM-TO-SIM VOICE CALL DEEPFAKE DETECTION ARCHITECTURE</text>
+    <text x="1885" y="1060" font-size="9" font-weight="800" letter-spacing="1" fill="#000000" text-anchor="end">TARGET: CELLULAR VoLTE / VoNR • MONOCHROME TECHNICAL FLOW</text>
+  </g>
+</svg>
