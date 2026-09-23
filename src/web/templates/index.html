@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>True Tone SIH - AI Voice Detection & IP Firewall Defense</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header Bar -->
+  <header class="header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">TT</div>
+        <div>
+          <h1 class="brand-title">True Tone Cyber Defense</h1>
+          <div class="brand-subtitle">AI Synthetic Voice & Deepfake IP Firewall</div>
+        </div>
+      </div>
+      <div class="system-status-badges">
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          <span>GATEWAY DEFENSE: ACTIVE</span>
+        </div>
+        <div class="status-badge" style="color: var(--accent-cyan)">
+          <span>MODEL: CNN-BiLSTM-Attn (Epoch 7)</span>
+        </div>
+        <div class="status-badge" style="color: var(--accent-emerald)">
+          <span>EER: 0.0022%</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+
+    <!-- Telemetry Cards -->
+    <section class="telemetry-grid">
+      <div class="telemetry-card danger">
+        <div class="telemetry-label">
+          <span>ACTIVE BANNED IPs</span>
+          <span>🛑</span>
+        </div>
+        <div class="telemetry-value" id="telemetryActiveBans">0</div>
+        <div class="telemetry-sub">Firewall & Gateway Blocks Enforced</div>
+      </div>
+
+      <div class="telemetry-card danger">
+        <div class="telemetry-label">
+          <span>AI SPOOFS NEUTRALIZED</span>
+          <span>🛡️</span>
+        </div>
+        <div class="telemetry-value" id="telemetrySpoofsStopped">0</div>
+        <div class="telemetry-sub">Voice Deepfakes Intercepted</div>
+      </div>
+
+      <div class="telemetry-card success">
+        <div class="telemetry-label">
+          <span>BONAFIDE CALLS ALLOWED</span>
+          <span>✅</span>
+        </div>
+        <div class="telemetry-value" id="telemetryBonafideCalls">0</div>
+        <div class="telemetry-sub">Verified Authentic Human Voice</div>
+      </div>
+
+      <div class="telemetry-card">
+        <div class="telemetry-label">
+          <span>TOTAL CALLS ANALYZED</span>
+          <span>📊</span>
+        </div>
+        <div class="telemetry-value" id="telemetryTotalCalls">0</div>
+        <div class="telemetry-sub">Across VoIP & Web Gateways</div>
+      </div>
+    </section>
+
+    <!-- Main Dashboard Split Grid -->
+    <div class="dashboard-grid">
+
+      <!-- Left Column: Audio Inspection & Call Simulator -->
+      <section class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <span>🎙️</span>
+            <span>Live Audio Inspection & IP Mitigation</span>
+          </h2>
+          <span class="status-badge" style="font-size: 0.7rem;">Real-Time Defense</span>
+        </div>
+
+        <!-- Mode Toggle Tabs -->
+        <div class="tabs">
+          <button class="tab-btn active" id="tabLiveCall" onclick="switchTab('livecall')">📞 Live IP Call Gateway</button>
+          <button class="tab-btn" id="tabSimulator" onclick="switchTab('simulator')">🚀 Quick Simulator</button>
+          <button class="tab-btn" id="tabUpload" onclick="switchTab('upload')">📁 Custom Audio Upload</button>
+        </div>
+
+        <!-- LIVE IP CALL GATEWAY & BACKGROUND INTERCEPTOR VIEW -->
+        <div id="viewLiveCall">
+          <div class="input-group">
+            <label class="input-label" for="liveCallerIp">Caller's Network IP Address (SIP / VoIP Origin):</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="text" id="liveCallerIp" class="input-control" value="198.51.100.110" placeholder="e.g. 198.51.100.110">
+              <button type="button" class="btn-unblock" style="white-space: nowrap; padding: 0.5rem 1rem; border-radius: 8px;" onclick="unblockCurrentCallerIp()" title="Unblock this IP if banned">🔓 Unblock IP</button>
+            </div>
+          </div>
+
+          <label class="input-label">Select In-Call Audio Interception Mode:</label>
+          <div class="sample-picker" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 1.25rem;">
+            <div class="sample-card selected" id="sourceMic" onclick="selectAudioSource('mic')">
+              <span class="sample-badge" style="background: rgba(56, 189, 248, 0.2); color: var(--accent-cyan);">Live Audio</span>
+              <div class="sample-title">🎙️ Live Microphone / Line-In</div>
+              <div class="sample-desc">Analyze in-call speech from mic or headset</div>
+            </div>
+
+            <div class="sample-card" id="sourceTab" onclick="selectAudioSource('tab')">
+              <span class="sample-badge" style="background: rgba(168, 85, 247, 0.2); color: var(--accent-purple);">Call Tab Audio</span>
+              <div class="sample-title">🔊 Tap Call Tab / System Audio</div>
+              <div class="sample-desc">Sniff WhatsApp Web, Meet, Teams, or System Audio</div>
+            </div>
+
+            <div class="sample-card" id="sourceSim" onclick="selectAudioSource('sim')">
+              <span class="sample-badge" style="background: rgba(244, 63, 94, 0.2); color: var(--accent-crimson);">Test Feed</span>
+              <div class="sample-title">⚡ Simulated Call Stream</div>
+              <div class="sample-desc">Test with AI Deepfake vs Human speech</div>
+            </div>
+          </div>
+
+          <!-- Microphone / Loopback Device Picker -->
+          <div id="micDevicePicker" style="display: block; margin-bottom: 1.25rem;">
+            <label class="input-label" for="audioDeviceSelect">Input Audio Device (Microphone or Stereo Mix Loopback):</label>
+            <select id="audioDeviceSelect" class="input-control" style="font-size: 0.85rem; padding: 0.5rem 0.75rem;">
+              <option value="default">🎙️ Default Microphone / System Audio Input</option>
+            </select>
+          </div>
+
+          <!-- In-Call Tab & System Audio Instructions Guide -->
+          <div id="tabAudioGuide" style="display: none; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.825rem; color: #e2e8f0;">
+            <div style="font-weight: 700; color: var(--accent-purple); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+              <span>🔊</span> <span>How to Sniff Remote Caller Voice from WhatsApp, Meet, Teams, or System Call:</span>
+            </div>
+            <ul style="margin: 0; padding-left: 1.25rem; line-height: 1.5; color: var(--text-muted);">
+              <li><strong>Web Calls (WhatsApp Web, Google Meet, Zoom Web):</strong> In the browser dialog, select the <strong style="color:#fff;">Chrome Tab</strong> where the call is running and verify that <strong style="color:var(--accent-emerald);">"Also share tab audio"</strong> at the bottom is checked.</li>
+              <li><strong>Desktop Call Apps (WhatsApp Desktop, Zoom App, Teams, Discord, VoIP):</strong> Select <strong style="color:#fff;">Entire Screen</strong> and check <strong style="color:var(--accent-emerald);">"Share system audio"</strong> at the bottom left.</li>
+              <li><strong>Speaker Audio Tip:</strong> If the caller voice is playing through your laptop/PC speakers, you can also select <strong style="color:var(--accent-cyan);">"🎙️ Live Microphone / Line-In"</strong> to capture the caller's acoustic output directly without sharing screens!</li>
+            </ul>
+          </div>
+          <div id="simulatedSubPicker" style="display: none; margin-bottom: 1.25rem;">
+            <label class="input-label">Simulated Caller Voice Type:</label>
+            <div style="display: flex; gap: 0.75rem;">
+              <button type="button" class="tab-btn active" id="simSpoofBtn" onclick="setSimVoiceType('spoof')" style="flex: 1; border: 1px solid var(--accent-crimson); color: var(--accent-crimson);">🚨 Synthetic AI Voice (Spoof Attack)</button>
+              <button type="button" class="tab-btn" id="simHumanBtn" onclick="setSimVoiceType('bonafide')" style="flex: 1; border: 1px solid var(--accent-emerald); color: var(--accent-emerald);">✅ Authentic Human Voice</button>
+            </div>
+          </div>
+
+          <!-- Live Call Console -->
+          <div class="live-call-box" id="liveCallBox">
+            <div class="live-call-status-row">
+              <div class="live-call-indicator">
+                <span class="call-pulse-dot" id="callPulseDot"></span>
+                <span id="callStatusText">CALL GUARDIAN: STANDBY</span>
+              </div>
+              <div class="call-timer" id="callTimer">00:00</div>
+            </div>
+
+            <!-- Live Canvas Audio Waveform Oscilloscope -->
+            <canvas id="liveAudioCanvas" height="60" style="width: 100%; border-radius: 10px; background: rgba(0,0,0,0.4); margin-bottom: 0.6rem; border: 1px solid rgba(255,255,255,0.06);"></canvas>
+
+            <!-- Real-Time Audio Signal Level VU Meter -->
+            <div id="audioSignalBarContainer" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem; font-size: 0.75rem; font-family: var(--font-mono); background: rgba(0,0,0,0.25); padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+              <span style="color: var(--text-muted); min-width: 90px;">AUDIO LEVEL:</span>
+              <div style="flex: 1; background: rgba(255,255,255,0.06); height: 8px; border-radius: 4px; overflow: hidden; position: relative;">
+                <div id="audioSignalMeter" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10b981 0%, #00f2fe 70%, #f43f5e 100%); transition: width 0.08s ease; border-radius: 4px;"></div>
+              </div>
+              <span id="audioSignalText" style="color: var(--text-muted); font-weight: 600; min-width: 155px; text-align: right;">STANDBY / NO SIGNAL</span>
+            </div>
+
+            <!-- Waveform Animation Fallback -->
+            <div class="wave-visualizer" id="waveVisualizer" style="display: none;">
+              <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+              <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+              <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+              <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+            </div>
+
+            <div class="live-detection-banner" id="liveDetectionBanner">
+              <span id="liveBannerIcon">🛡️</span>
+              <span id="liveBannerMsg">Click 'Start Background Call Interceptor' to monitor live caller audio.</span>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+              <button class="btn-primary" id="btnStartCall" onclick="startLiveIpCall()" style="flex: 1;">
+                <span>🎙️</span>
+                <span>Start In-Call Audio Interception</span>
+              </button>
+              <button class="btn-primary" id="btnEndCall" onclick="endLiveIpCall()" style="background: rgba(244, 63, 94, 0.2); border: 1px solid rgba(244, 63, 94, 0.4); color: var(--accent-crimson); flex: 0.6; display: none;">
+                <span>⏹️</span>
+                <span>Stop Interception</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIMULATOR VIEW -->
+        <div id="viewSimulator" style="display: none;">
+          <div class="input-group">
+            <label class="input-label" for="simCallerIp">Simulated Originating Caller IP Address:</label>
+            <input type="text" id="simCallerIp" class="input-control" value="198.51.100.42" placeholder="e.g. 198.51.100.42">
+          </div>
+
+          <label class="input-label">Select Audio Stream to Transmit:</label>
+          <div class="sample-picker">
+            <div class="sample-card spoof-sample selected" id="sampleCardSpoof" onclick="selectSample('spoof')">
+              <span class="sample-badge spoof">Deepfake Attack</span>
+              <div class="sample-title">Synthetic AI Voice (Spoof)</div>
+              <div class="sample-desc">Generated via ASVspoof neural vocoder</div>
+            </div>
+
+            <div class="sample-card bonafide-sample" id="sampleCardBonafide" onclick="selectSample('bonafide')">
+              <span class="sample-badge bonafide">Authentic</span>
+              <div class="sample-title">Natural Human Voice (Bonafide)</div>
+              <div class="sample-desc">Clean acoustic human vocal tract</div>
+            </div>
+          </div>
+
+          <button class="btn-primary" id="btnRunSim" onclick="runSimulation()">
+            <span>⚡</span>
+            <span>Transmit Voice Stream & Test Defense</span>
+          </button>
+        </div>
+
+        <!-- FILE UPLOAD VIEW -->
+        <div id="viewUpload" style="display: none;">
+          <div class="input-group">
+            <label class="input-label" for="uploadCallerIp">Caller / Client IP to Inspect:</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="text" id="uploadCallerIp" class="input-control" value="203.0.113.88" placeholder="e.g. 203.0.113.88">
+              <button type="button" class="btn-unblock" style="white-space: nowrap; padding: 0.5rem 1rem; border-radius: 8px;" onclick="unblockIp(document.getElementById('uploadCallerIp').value.trim())" title="Unblock this IP if banned">🔓 Unblock IP</button>
+            </div>
+          </div>
+
+          <div class="dropzone" id="audioDropzone" onclick="document.getElementById('fileInput').click()">
+            <div class="dropzone-icon">☁️</div>
+            <div style="font-weight: 600; margin-bottom: 0.25rem;">Drop audio file here or click to browse</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Supports .FLAC, .WAV, .MP3 (16kHz recommended)</div>
+            <div id="selectedFileName" style="margin-top: 0.75rem; font-family: var(--font-mono); color: var(--accent-cyan); font-size: 0.85rem;"></div>
+          </div>
+          <input type="file" id="fileInput" accept=".flac,.wav,.mp3" style="display: none;" onchange="handleFileSelected(event)">
+
+          <button class="btn-primary" id="btnUploadInspect" onclick="uploadAndInspectAudio()">
+            <span>🔍</span>
+            <span>Analyze Audio with ML Model</span>
+          </button>
+        </div>
+
+        <!-- Detection Result Box -->
+        <div class="result-box" id="resultBox">
+          <div class="result-verdict" id="resultVerdict">
+            <span id="verdictText">CLASSIFYING...</span>
+            <span class="threat-action-pill" id="actionPill">ACTION</span>
+          </div>
+
+          <div class="meter-container">
+            <div class="meter-labels">
+              <span>Deepfake Spoof Risk</span>
+              <span id="spoofPercentLabel" style="font-weight: 700; font-family: var(--font-mono);">0.0%</span>
+            </div>
+            <div class="meter-bar-bg">
+              <div class="meter-fill" id="meterFill"></div>
+            </div>
+          </div>
+
+          <div class="result-stats-row">
+            <div class="stat-item">
+              <div class="stat-name">Threat Severity</div>
+              <div class="stat-val" id="riskLevelVal">-</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-name">Total Latency</div>
+              <div class="stat-val" id="latencyVal">-</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-name">IP Firewall Status</div>
+              <div class="stat-val" id="ipActionVal">-</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Right Column: Active Firewall Blocklist & Incident Feed -->
+      <section style="display: flex; flex-direction: column; gap: 2rem;">
+
+        <!-- Active Firewall Blocklist Panel -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <span>🛡️</span>
+              <span>Active Firewall Blocklist</span>
+            </h2>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn-unblock" style="font-size: 0.775rem; padding: 0.4rem 0.85rem;" onclick="openQuickUnblockModal()">🔓 Quick Unblock</button>
+              <button class="btn-unblock" style="background: rgba(239, 68, 68, 0.15); color: var(--accent-crimson); border-color: rgba(239, 68, 68, 0.3); font-size: 0.775rem; padding: 0.4rem 0.85rem;" onclick="unblockAllIps()" title="Unblock all active quarantined IPs">Clear All Bans</button>
+              <button class="btn-block-action" onclick="openManualBlockModal()">+ Quarantine IP</button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="firewall-table">
+              <thead>
+                <tr>
+                  <th>Origin IP</th>
+                  <th>Reason / Threat</th>
+                  <th>TTL Remaining</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="blocklistTbody">
+                <tr>
+                  <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    Loading active blocklist...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Live Incident Feed -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <span>📜</span>
+              <span>Live Threat Audit Feed</span>
+            </h2>
+            <span class="status-badge" style="font-size: 0.7rem;">Auto-Syncing</span>
+          </div>
+
+          <div class="incident-feed" id="incidentFeed">
+            <div style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+              Listening for network call events...
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Manual IP Quarantine Modal -->
+  <div class="modal-overlay" id="manualBlockModal">
+    <div class="modal-box">
+      <h3 style="margin-bottom: 1rem; font-size: 1.15rem; color: #fff;">Quarantine IP at Firewall</h3>
+      <div class="input-group">
+        <label class="input-label" for="manualIpInput">Target IP Address:</label>
+        <input type="text" id="manualIpInput" class="input-control" placeholder="e.g. 192.0.2.14">
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="manualReasonInput">Quarantine Reason:</label>
+        <input type="text" id="manualReasonInput" class="input-control" value="Manual Security Quarantine">
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="manualTtlInput">Duration (seconds):</label>
+        <input type="number" id="manualTtlInput" class="input-control" value="3600">
+      </div>
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+        <button class="btn-block-action" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);" onclick="closeManualBlockModal()">Cancel</button>
+        <button class="btn-block-action" onclick="submitManualBlock()">Enforce Ban</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick IP Unblock Modal -->
+  <div class="modal-overlay" id="quickUnblockModal">
+    <div class="modal-box">
+      <h3 style="margin-bottom: 1rem; font-size: 1.15rem; color: #fff;">🔓 Restore / Unblock IP Address</h3>
+      <div class="input-group">
+        <label class="input-label" for="quickUnblockIpInput">Target IP Address to Unblock:</label>
+        <input type="text" id="quickUnblockIpInput" class="input-control" placeholder="e.g. 198.51.100.110">
+      </div>
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+        <button class="btn-block-action" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);" onclick="closeQuickUnblockModal()">Cancel</button>
+        <button class="btn-unblock" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;" onclick="submitQuickUnblock()">Confirm Unblock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Missing Tab Audio Helper Modal -->
+  <div class="modal-overlay" id="tabAudioHelpModal">
+    <div class="modal-box" style="max-width: 520px;">
+      <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;">
+        <span style="font-size: 1.5rem;">🔊</span>
+        <h3 style="font-size: 1.15rem; color: #fff; margin: 0;">Audio Track Required to Tap In-Call Audio</h3>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+        The browser sharing dialog was closed without sharing audio. To capture the voice of the caller on the other side of your call, audio sharing must be enabled:
+      </p>
+      <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.825rem; color: #e2e8f0;">
+        <p style="margin: 0 0 0.5rem 0;"><strong>1. For Web Calls (WhatsApp Web, Google Meet, Zoom Web):</strong><br>Select the <strong style="color:#fff;">Chrome Tab</strong> tab and check <strong style="color:var(--accent-emerald);">"Also share tab audio"</strong> at the bottom.</p>
+        <p style="margin: 0;"><strong>2. For Desktop Apps (WhatsApp Desktop, Teams, Zoom App):</strong><br>Select <strong style="color:#fff;">Entire Screen</strong> and check <strong style="color:var(--accent-emerald);">"Share system audio"</strong> at the bottom left.</p>
+      </div>
+      <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+        <button class="btn-block-action" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);" onclick="closeTabAudioHelpModal()">Dismiss</button>
+        <button class="btn-unblock" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;" onclick="retryTabAudioCapture()">🔁 Try Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notifications Container -->
+  <div id="toastContainer" style="position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 9999; pointer-events: none;"></div>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

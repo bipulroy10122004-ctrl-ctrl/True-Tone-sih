@@ -1,0 +1,47 @@
+{
+  "samples_tested": 200,
+  "overall_spoof_recall_pct": 72.57142857142857,
+  "mean_latency_ms": 51.84936500212643,
+  "per_vocoder": {
+    "MelGAN": {
+      "count": 25,
+      "mean_prob": 81.464,
+      "detected_spoofs": 21
+    },
+    "Parallel WaveGAN": {
+      "count": 25,
+      "mean_prob": 81.6828,
+      "detected_spoofs": 20
+    },
+    "Multi-band MelGAN": {
+      "count": 25,
+      "mean_prob": 74.5364,
+      "detected_spoofs": 18
+    },
+    "HiFi-GAN": {
+      "count": 25,
+      "mean_prob": 75.87799999999999,
+      "detected_spoofs": 17
+    },
+    "WaveGlow": {
+      "count": 25,
+      "mean_prob": 81.2288,
+      "detected_spoofs": 20
+    },
+    "FullBand-MelGAN": {
+      "count": 25,
+      "mean_prob": 60.072399999999995,
+      "detected_spoofs": 12
+    },
+    "Conformer / Other": {
+      "count": 25,
+      "mean_prob": 78.506,
+      "detected_spoofs": 19
+    },
+    "LJSpeech (Bonafide Human)": {
+      "count": 25,
+      "mean_prob": 86.63600000000001,
+      "detected_spoofs": 22
+    }
+  }
+}

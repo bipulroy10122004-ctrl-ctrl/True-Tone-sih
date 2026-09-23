@@ -1,0 +1,36 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Caches & Databases
+*.db
+*.sqlite
+*.sqlite3
+models/*.db
+
+# Datasets and large binary downloads (>100MB violates GitHub limits)
+data/my_dataset/
+data/custom_cached_features/
+data/wavefake_samples/*.parquet
+data/wavefake_samples/generated/
+data/wavefake_samples/LJSpeech/
+data/wavefake_samples/special/
+*.parquet
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
