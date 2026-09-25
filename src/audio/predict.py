@@ -30,12 +30,12 @@ def load_model(
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = AudioSpoofDetector(input_dim=60, hidden_dim=128).to(device)
-    threshold = 0.7335  # Calibrated threshold from checkpoint
+    threshold = 0.50  # Calibrated operational threshold from checkpoint
 
     if os.path.exists(model_path):
         ckpt = torch.load(model_path, map_location=device, weights_only=False)
         model.load_state_dict(ckpt["model_state_dict"])
-        threshold = ckpt.get("optimal_threshold", 0.7335)
+        threshold = ckpt.get("optimal_threshold", 0.50)
     else:
         print(f"[Warning] Checkpoint {model_path} not found. Running with initialized weights.")
 
@@ -121,7 +121,7 @@ def predict_features(
         if threshold is None:
             threshold = default_thresh
     elif threshold is None:
-        threshold = 0.7335
+        threshold = 0.50
 
     # Sanitize and pad features gracefully
     clean_tensor = sanitize_and_pad_features(features).to(device)
@@ -177,7 +177,7 @@ def predict(
             "spoof_probability": 0.0,
             "spoof_percentage": 0.0,
             "verdict": "AMBIENT SILENCE / WAITING FOR VOICE",
-            "threshold": threshold or 0.7335,
+            "threshold": threshold or 0.50,
             "latency_ms": round(t_tot, 2),
             "feature_latency_ms": 0.5,
             "forward_latency_ms": 0.0,

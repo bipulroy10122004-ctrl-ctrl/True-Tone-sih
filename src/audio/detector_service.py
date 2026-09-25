@@ -23,7 +23,7 @@ DEFAULT_MODEL_PATH = os.path.abspath(
     os.path.join(SCRIPT_DIR, "..", "..", "models", "best_audio_spoof_model.pt")
 )
 
-def detect_voice_activity(audio_source, amp_thresh: float = 0.015, rms_thresh: float = 0.0025) -> tuple[bool, dict]:
+def detect_voice_activity(audio_source, amp_thresh: float = 0.025, rms_thresh: float = 0.0035) -> tuple[bool, dict]:
     """
     Robust Voice Activity & Speech Presence Detection (VAD).
     Accurately distinguishes genuine human vocal speech (or AI deepfake synthesized speech)
@@ -87,7 +87,13 @@ def detect_voice_activity(audio_source, amp_thresh: float = 0.015, rms_thresh: f
 
         # Estimate background noise floor from lower 20th percentile
         noise_floor = float(np.percentile(frame_rmss, 20))
-        speech_thresh = max(0.005, noise_floor * 1.5)
+        speech_thresh = max(0.006, noise_floor * 1.6)
+
+        active_speech_frames = int(np.sum(frame_rmss >= speech_thresh))
+        min_required_frames = max(2, int(0.04 * num_frames))
+        if active_speech_frames < min_required_frames:
+            print(f"[VAD] AMBIENT NOISE (few speech frames: {active_speech_frames}/{num_frames}): max_amp={max_amp:.5f}, rms={rms:.5f}")
+            return False, {"reason": "stationary_noise_floor", "max_amp": max_amp, "rms": rms, "noise_floor": noise_floor}
 
         pitch_peaks = []
         voice_band_energies = []
@@ -95,7 +101,7 @@ def detect_voice_activity(audio_source, amp_thresh: float = 0.015, rms_thresh: f
         n_fft = 512
         window = np.hamming(frame_len)
         freqs = np.fft.rfftfreq(n_fft, 1.0 / sr)
-        vb_mask = (freqs >= 250) & (freqs <= 3500)
+        vb_mask = (freqs >= 80) & (freqs <= 3800)
 
         for i in range(num_frames):
             if frame_rmss[i] < speech_thresh:
@@ -129,18 +135,19 @@ def detect_voice_activity(audio_source, amp_thresh: float = 0.015, rms_thresh: f
         avg_pitch = float(np.mean(pitch_peaks))
         avg_vb = float(np.mean(voice_band_energies))
         avg_flat = float(np.mean(spectral_flatnesses))
-        voiced_frame_count = sum(1 for p in pitch_peaks if p >= 0.45)
-        voiced_ratio = voiced_frame_count / len(pitch_peaks)
+        voiced_frame_count = sum(1 for p in pitch_peaks if p >= 0.50)
+        voiced_ratio = voiced_frame_count / max(1, len(pitch_peaks))
 
         # Distinguish Vocal Speech vs Ambient Noise:
-        # - Speech has clear pitch harmonics (max_pitch >= 0.45, voiced_ratio >= 0.08)
-        # - Speech energy is concentrated in vocal tract range (avg_vb >= 0.14)
-        # - Speech is non-flat resonant formants (avg_flat < 0.45)
-        is_voiced = (max_pitch >= 0.45 and voiced_ratio >= 0.08)
-        is_in_voice_band = (avg_vb >= 0.14)
+        # - Speech has clear pitch harmonics (max_pitch >= 0.55, voiced_ratio >= 0.12)
+        # - Speech energy is concentrated in vocal tract formant range (avg_vb >= 0.18 or strong harmonic pitch)
+        # - Speech has resonant formants rather than flat noise (avg_flat < 0.45)
+        is_voiced = (max_pitch >= 0.55 and voiced_ratio >= 0.12)
+        is_in_voice_band = (avg_vb >= 0.18 or max_pitch >= 0.70)
         is_not_flat_noise = (avg_flat < 0.45)
 
         is_speech = bool(is_voiced and is_in_voice_band and is_not_flat_noise)
+
 
         details = {
             "is_speech": is_speech,
@@ -192,12 +199,12 @@ def extract_lfcc_from_bytes(audio_bytes, max_frames=400, n_lfcc=20):
         y = scipy.signal.resample_poly(y, up, down).astype(np.float32)
         sr = 16000
 
-    # Dynamic range normalization: gently normalize speech without amplifying quiet pauses or noise
+    # Dynamic range normalization: scale speech to standard reference amplitude
     max_amp = float(np.max(np.abs(y))) if len(y) > 0 else 0.0
-    rms = float(np.sqrt(np.mean(y ** 2))) if len(y) > 0 else 0.0
-    if max_amp >= 0.10 and rms >= 0.02:
-        norm_gain = min(2.5, 0.90 / max_amp)
+    if max_amp > 1e-4:
+        norm_gain = min(50.0, max(0.1, 0.85 / max_amp))
         y = (y * norm_gain).astype(np.float32)
+
 
     y = pre_emphasis(y)
     frame_len = int(0.025 * sr)
@@ -241,8 +248,7 @@ class AudioSpoofInferenceEngine:
             self.device = torch.device(device)
 
         self.model_path = model_path
-        # Calibrated operational threshold: 0.55 provides reliable separation between bonafide (14%) and spoof (61%+)
-        self.threshold = threshold if threshold is not None else 0.55
+        self.threshold = threshold
         self.input_dim = 60
         self.hidden_dim = 128
         self.model = None
@@ -256,11 +262,13 @@ class AudioSpoofInferenceEngine:
             checkpoint = torch.load(self.model_path, map_location=self.device, weights_only=False)
             self.model.load_state_dict(checkpoint["model_state_dict"])
             if self.threshold is None:
-                self.threshold = 0.55
-            self.epoch = checkpoint.get("epoch", 7)
-            self.best_eer = checkpoint.get("best_eer", 2.24e-5)
+                # Calibrated operational threshold: 0.50 provides optimal separation between bonafide human and AI spoof
+                self.threshold = checkpoint.get("optimal_threshold", 0.50)
+            self.epoch = checkpoint.get("epoch", 15)
+            self.best_eer = checkpoint.get("best_eer", 0.13)
             print(f"[AudioSpoofInferenceEngine] Loaded model checkpoint from {self.model_path} "
                   f"(Epoch: {self.epoch}, Dev EER: {self.best_eer*100:.4f}%, Operational Threshold: {self.threshold:.4f})")
+
         else:
             print(f"[AudioSpoofInferenceEngine] Warning: Checkpoint not found at {self.model_path}. Using initialized weights.")
             self.epoch = 0

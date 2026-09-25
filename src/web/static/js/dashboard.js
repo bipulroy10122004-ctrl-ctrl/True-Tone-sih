@@ -255,9 +255,9 @@ async function startLiveIpCall() {
         const deviceId = document.getElementById('audioDeviceSelect')?.value;
         const audioConstraints = {
           channelCount: 1,
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
         };
         if (deviceId && deviceId !== 'default') {
           audioConstraints.deviceId = { exact: deviceId };
@@ -422,10 +422,10 @@ async function startLiveIpCall() {
           const chunkRms = Math.sqrt(sumSquaresChunk / downsampled.length);
 
           // Speech-gated normalization:
-          // ONLY gently normalize when active vocal speech energy is present (RMS >= 0.025, peak >= 0.08).
-          // NEVER amplify inter-speech silence, ambient room noise, or pauses!
-          if (chunkRms >= 0.025 && peakAmp >= 0.08) {
-            const normGain = Math.min(2.0, 0.85 / peakAmp);
+          // When active speech is present, normalize to standard 0.85 reference amplitude
+          // without amplifying near-silent background pause
+          if (peakAmp >= 0.03 && chunkRms >= 0.005) {
+            const normGain = Math.min(10.0, 0.85 / peakAmp);
             for (let i = 0; i < downsampled.length; i++) {
               downsampled[i] *= normGain;
             }

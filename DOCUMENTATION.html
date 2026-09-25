@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>True Tone SIH | Complete Project Documentation & ML Guide</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-base: #06090f;
+      --bg-surface: #0c121d;
+      --bg-elevated: #111a2a;
+      --bg-glass: rgba(17, 26, 42, 0.75);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(0, 242, 254, 0.3);
+      --cyan-neon: #00f2fe;
+      --cyan-glow: rgba(0, 242, 254, 0.15);
+      --blue-accent: #38bdf8;
+      --emerald-neon: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.15);
+      --purple-neon: #8b5cf6;
+      --purple-glow: rgba(139, 92, 246, 0.15);
+      --amber-neon: #f59e0b;
+      --rose-neon: #f43f5e;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.7;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(0, 242, 254, 0.035) 0%, transparent 40%),
+        radial-gradient(circle at 90% 60%, rgba(139, 92, 246, 0.035) 0%, transparent 45%),
+        linear-gradient(to bottom, rgba(6, 9, 15, 0.98), rgba(6, 9, 15, 1));
+      background-attachment: fixed;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    /* Layout */
+    .doc-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Navigation */
+    .doc-sidebar {
+      width: 320px;
+      background: rgba(12, 18, 29, 0.88);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--border-subtle);
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .doc-sidebar-header {
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-subtitle {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--cyan-neon);
+      font-weight: 600;
+    }
+
+    .search-container {
+      padding: 14px 18px 6px;
+    }
+
+    .search-input-box {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px 8px 34px;
+      color: #fff;
+      font-size: 0.85rem;
+      font-family: var(--font-body);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-input-box:focus {
+      border-color: var(--cyan-neon);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.2);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .search-icon-wrapper {
+      position: absolute;
+      left: 30px;
+      top: 96px;
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    .nav-scroll-area {
+      flex: 1;
+      padding: 14px 12px 40px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-category {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      font-weight: 700;
+      padding: 16px 12px 6px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .nav-link:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-link.active {
+      color: var(--cyan-neon);
+      background: var(--cyan-glow);
+      border-color: rgba(0, 242, 254, 0.3);
+      font-weight: 600;
+    }
+
+    /* Main Viewport */
+    .doc-main {
+      margin-left: 320px;
+      flex: 1;
+      padding: 48px 72px 120px;
+      max-width: 1440px;
+    }
+
+    /* Hero Banner */
+    .doc-hero {
+      background: linear-gradient(135deg, rgba(17, 26, 42, 0.95), rgba(12, 18, 29, 0.8));
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 48px 52px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 56px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+
+    .doc-hero::after {
+      content: '';
+      position: absolute;
+      top: -30%;
+      right: -10%;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(0, 242, 254, 0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .badge-cyan {
+      background: var(--cyan-glow);
+      color: var(--cyan-neon);
+      border: 1px solid rgba(0, 242, 254, 0.4);
+    }
+
+    .badge-purple {
+      background: var(--purple-glow);
+      color: var(--purple-neon);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: 2.9rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 860px;
+      line-height: 1.75;
+      margin-bottom: 32px;
+    }
+
+    .key-metric-pills {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .metric-pill {
+      background: rgba(12, 18, 29, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .metric-pill-val {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--cyan-neon);
+    }
+
+    .metric-pill-lbl {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Content Typography & Sections */
+    .doc-section {
+      margin-bottom: 80px;
+      scroll-margin-top: 40px;
+    }
+
+    .section-header {
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 18px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .section-heading i {
+      color: var(--cyan-neon);
+    }
+
+    .h3-title {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #f8fafc;
+      margin: 32px 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .p-text {
+      color: var(--text-muted);
+      font-size: 1.02rem;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    /* Cards & Callouts */
+    .analogy-card {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(12, 18, 29, 0.7));
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      margin: 24px 0;
+      position: relative;
+    }
+
+    .analogy-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--purple-neon);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .info-callout {
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.06), rgba(12, 18, 29, 0.7));
+      border-left: 4px solid var(--cyan-neon);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 20px 24px;
+      margin: 24px 0;
+      color: var(--text-muted);
+    }
+
+    .warning-callout {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.06), rgba(12, 18, 29, 0.7));
+      border-left: 4px solid var(--amber-neon);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 20px 24px;
+      margin: 24px 0;
+      color: var(--text-muted);
+    }
+
+    /* Mathematical Formula Blocks */
+    .math-formula {
+      background: #090e18;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 18px 24px;
+      margin: 18px 0;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: #38bdf8;
+      overflow-x: auto;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Code Blocks */
+    .code-container {
+      background: #080c15;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin: 22px 0;
+      overflow: hidden;
+    }
+
+    .code-header {
+      background: #0e1625;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .code-title {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--cyan-neon);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .copy-button {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    pre {
+      padding: 22px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      line-height: 1.65;
+      color: #e2e8f0;
+    }
+
+    .kwd { color: #f43f5e; font-weight: 600; }
+    .fn { color: #38bdf8; }
+    .typ { color: #c084fc; }
+    .str { color: #34d399; }
+    .com { color: #64748b; font-style: italic; }
+    .num { color: #fbbf24; }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      margin: 24px 0;
+    }
+
+    .data-table th {
+      background: #111a2a;
+      padding: 14px 18px;
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+      text-align: left;
+    }
+
+    .data-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-main);
+    }
+
+    /* Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin: 20px 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .card-box {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 26px;
+      transition: all 0.25s ease;
+    }
+
+    .card-box:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .card-tag {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--cyan-neon);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+
+    .card-h {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    /* Tech Stack Architecture Styling */
+    .tech-layer-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      margin-bottom: 24px;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+    .tech-layer-card:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    .tech-layer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .tech-layer-title {
+      font-family: var(--font-display);
+      font-size: 1.32rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .tech-pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 18px;
+    }
+    .tech-tag-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+    }
+    .tech-tag-badge.cyan { border-color: rgba(0, 242, 254, 0.35); color: var(--cyan-neon); background: var(--cyan-glow); }
+    .tech-tag-badge.purple { border-color: rgba(139, 92, 246, 0.35); color: var(--purple-neon); background: var(--purple-glow); }
+    .tech-tag-badge.emerald { border-color: rgba(16, 185, 129, 0.35); color: var(--emerald-neon); background: var(--emerald-glow); }
+    .tech-tag-badge.amber { border-color: rgba(245, 158, 11, 0.35); color: var(--amber-neon); background: rgba(245, 158, 11, 0.15); }
+    .tech-tag-badge.blue { border-color: rgba(56, 189, 248, 0.35); color: var(--blue-accent); background: rgba(56, 189, 248, 0.15); }
+    .tech-tag-badge.rose { border-color: rgba(244, 63, 94, 0.35); color: var(--rose-neon); background: rgba(244, 63, 94, 0.15); }
+    
+    .tech-item-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 14px;
+    }
+    .tech-sub-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+      transition: all 0.2s;
+    }
+    .tech-sub-box:hover {
+      border-color: rgba(0, 242, 254, 0.3);
+      background: rgba(0, 242, 254, 0.015);
+    }
+    .tech-sub-name {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .tech-sub-role {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Interactive Pipeline Visualizer */
+    .pipeline-step-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      transition: all 0.2s;
+    }
+
+    .pipeline-step-box:hover {
+      border-color: var(--border-accent);
+      background: rgba(0, 242, 254, 0.02);
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      border: 2px solid var(--cyan-neon);
+      color: var(--cyan-neon);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    /* Collapsible Deep Dive */
+    details.deep-dive {
+      background: #0a0f19;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin: 18px 0;
+      overflow: hidden;
+    }
+
+    details.deep-dive summary {
+      padding: 16px 20px;
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-weight: 600;
+      color: var(--blue-accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      user-select: none;
+    }
+
+    details.deep-dive summary:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    details.deep-dive[open] summary {
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--cyan-neon);
+    }
+
+    .deep-dive-body {
+      padding: 22px 24px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 1080px) {
+      .doc-sidebar {
+        width: 80px;
+      }
+      .brand-title, .brand-subtitle, .nav-link span, .nav-category, .search-container {
+        display: none;
+      }
+      .doc-sidebar-header {
+        justify-content: center;
+        padding: 20px 0;
+      }
+      .nav-link {
+        justify-content: center;
+        padding: 14px 0;
+      }
+      .doc-main {
+        margin-left: 80px;
+        padding: 30px;
+      }
+      .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="doc-layout">
+
+  <!-- Sidebar Navigation -->
+  <aside class="doc-sidebar">
+    <div class="doc-sidebar-header">
+      <div class="brand-icon">
+        <i data-lucide="shield-check" style="width: 26px; height: 26px;"></i>
+      </div>
+      <div>
+        <div class="brand-title">True Tone SIH</div>
+        <div class="brand-subtitle">Project Manual &amp; ML Theory</div>
+      </div>
+    </div>
+
+    <div class="search-container">
+      <i data-lucide="search" class="search-icon-wrapper" style="width: 16px; height: 16px;"></i>
+      <input type="text" id="docSearch" class="search-input-box" placeholder="Search documentation...">
+    </div>
+
+    <nav class="nav-scroll-area">
+      <div class="nav-category">1. Fundamentals</div>
+      <a href="#intro" class="nav-link active">
+        <i data-lucide="book-open"></i>
+        <span>Project Overview</span>
+      </a>
+      <a href="#threat" class="nav-link">
+        <i data-lucide="alert-triangle"></i>
+        <span>The Deepfake Threat</span>
+      </a>
+      <a href="#dsp-theory" class="nav-link">
+        <i data-lucide="activity"></i>
+        <span>Audio DSP from Scratch</span>
+      </a>
+
+      <div class="nav-category">2. Machine Learning Theory</div>
+      <a href="#ml-primer" class="nav-link">
+        <i data-lucide="brain"></i>
+        <span>ML Fundamentals for Audio</span>
+      </a>
+      <a href="#feature-extraction" class="nav-link">
+        <i data-lucide="sliders"></i>
+        <span>LFCC Feature Engineering</span>
+      </a>
+      <a href="#model-architecture" class="nav-link">
+        <i data-lucide="cpu"></i>
+        <span>CNN-BiLSTM-Attention</span>
+      </a>
+      <a href="#loss-metrics" class="nav-link">
+        <i data-lucide="target"></i>
+        <span>Loss Functions &amp; EER Metric</span>
+      </a>
+
+      <div class="nav-category">3. Architecture &amp; Tech Stack</div>
+      <a href="#tech-stack" class="nav-link">
+        <i data-lucide="layers"></i>
+        <span>Complete Tech Stack</span>
+      </a>
+      <a href="#codebase-map" class="nav-link">
+        <i data-lucide="folder-tree"></i>
+        <span>Repository Architecture</span>
+      </a>
+      <a href="#firewall-engine" class="nav-link">
+        <i data-lucide="shield"></i>
+        <span>Dual-Tier IP Firewall</span>
+      </a>
+      <a href="#websocket-gateway" class="nav-link">
+        <i data-lucide="radio"></i>
+        <span>Live VoIP WebSocket Gateway</span>
+      </a>
+
+      <div class="nav-category">4. Operational Runbook</div>
+      <a href="#running-system" class="nav-link">
+        <i data-lucide="play-circle"></i>
+        <span>Running &amp; Testing</span>
+      </a>
+      <a href="#training-guide" class="nav-link">
+        <i data-lucide="repeat"></i>
+        <span>Model Training Guide</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Viewport -->
+  <main class="doc-main">
+
+    <!-- Hero Header -->
+    <header class="doc-hero" id="intro">
+      <div class="hero-badge-row">
+        <span class="hero-badge badge-cyan">
+          <i data-lucide="award" style="width: 14px; height: 14px;"></i> Smart India Hackathon
+        </span>
+        <span class="hero-badge badge-purple">
+          <i data-lucide="graduation-cap" style="width: 14px; height: 14px;"></i> Complete Learning Guide
+        </span>
+      </div>
+      <h1 class="hero-title">True Tone SIH: Master Technical Documentation &amp; Audio ML Theory</h1>
+      <p class="hero-desc">
+        Welcome to the definitive guide to <strong>True Tone SIH</strong>. This document explains every single concept—from the physical nature of sound waves and digital audio sampling, to deep learning architectures (CNNs, LSTMs, and Attention mechanisms), automated network security firewalls, and production deployment.
+      </p>
+
+      <div class="key-metric-pills">
+        <div class="metric-pill">
+          <div class="metric-pill-val">0.0022%</div>
+          <div>
+            <div class="metric-pill-lbl">Best EER</div>
+            <div style="font-size: 0.72rem; color: var(--text-dim);">ASVspoof 2019 LA</div>
+          </div>
+        </div>
+        <div class="metric-pill">
+          <div class="metric-pill-val">&lt; 50 ms</div>
+          <div>
+            <div class="metric-pill-lbl">Pipeline Latency</div>
+            <div style="font-size: 0.72rem; color: var(--text-dim);">Full Real-Time Stream</div>
+          </div>
+        </div>
+        <div class="metric-pill">
+          <div class="metric-pill-val">1.49 M</div>
+          <div>
+            <div class="metric-pill-lbl">Model Parameters</div>
+            <div style="font-size: 0.72rem; color: var(--text-dim);">Lightweight CPU Friendly</div>
+          </div>
+        </div>
+        <div class="metric-pill">
+          <div class="metric-pill-val">2-Frame</div>
+          <div>
+            <div class="metric-pill-lbl">Strike Hysteresis</div>
+            <div style="font-size: 0.72rem; color: var(--text-dim);">Zero False Dropouts</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- SECTION 1: THE DEEPFAKE THREAT -->
+    <section class="doc-section" id="threat">
+      <div class="section-header">
+        <h2 class="section-heading">
+          <i data-lucide="shield-alert"></i>
+          1. The Problem: AI Voice Cloning &amp; VoIP Spoofing
+        </h2>
+      </div>
+
+      <p class="p-text">
+        Imagine receiving a phone call from your bank's senior manager, a family member, or your company's CEO. The voice sounds completely identical—the pitch, the accent, the cadence, even subtle breathing sounds. They ask you to authorize an urgent wire transfer or reset a two-factor security credential. You comply, only to discover hours later that the call was entirely fabricated by an artificial intelligence model.
+      </p>
+
+      <div class="grid-2">
+        <div class="card-box">
+          <span class="card-tag">Generative Voice Tech</span>
+          <h3 class="card-h">Neural Vocoders &amp; TTS Models</h3>
+          <p class="p-text" style="font-size: 0.92rem;">
+            Modern AI speech generators (such as ElevenLabs, VALL-E, HiFi-GAN, and MelGAN) require as little as <strong>3 seconds of reference audio</strong> to create a convincing synthetic clone capable of speaking any sentence in real time.
+          </p>
+        </div>
+
+        <div class="card-box">
+          <span class="card-tag">Cyberattack Vectors</span>
+          <h3 class="card-h">Real-Time Social Engineering</h3>
+          <p class="p-text" style="font-size: 0.92rem;">
+            Attackers inject synthetic audio into live Voice over IP (VoIP), WebRTC, and cellular calls. Traditional cyber defenses inspect IP addresses, packet headers, and TLS certificates, but treat the audio stream itself as an uninspected black box.
+          </p>
+        </div>
+      </div>
+
+      <div class="analogy-card">
+        <div class="analogy-title">
+          <i data-lucide="lightbulb"></i> Intuitive Analogy: Why Standard Security Fails
+        </div>
+        <p class="p-text" style="margin-bottom: 0;">
+          Imagine an armored bank vault that checks the ID badge of everyone entering. An attacker puts on a hyper-realistic rubber mask of the vault manager. The security guard at the door checks the badge, sees the familiar face, and opens the door. <strong>True Tone SIH acts as an acoustic biometric scanner</strong> that examines the microscopic vocal tract vibrations under the mask to instantly verify whether the voice is produced by living human lungs and vocal cords or generated by a digital neural network.
+        </p>
+      </div>
+    </section>
+
+    <!-- SECTION 2: AUDIO DSP FROM FIRST PRINCIPLES -->
+    <section class="doc-section" id="dsp-theory">
+      <div class="section-header">
+        <h2 class="section-heading">
+          <i data-lucide="activity"></i>
+          2. Digital Signal Processing (DSP) for Beginners
+        </h2>
+      </div>
+
+      <p class="p-text">
+        Before understanding machine learning for audio, you must understand what sound actually is when stored on a computer.
+      </p>
+
+      <h3 class="h3-title"><i data-lucide="waves"></i> 2.1 Sound Waves &amp; Sampling Rate</h3>
+      <p class="p-text">
+        Sound is a physical pressure wave that travels through air. A microphone contains a diaphragm that vibrates when hit by sound waves, converting air pressure changes into continuous electrical voltage. A computer cannot store infinite continuous voltage, so it must perform <strong>Analog-to-Digital Conversion (ADC)</strong> by measuring (sampling) the voltage at regular time intervals.
+      </p>
+
+      <div class="info-callout">
+        <strong>The Nyquist-Shannon Sampling Theorem:</strong><br>
+        To accurately capture a sound wave of frequency $f_{\text{max}}$, you must sample the audio at a rate of at least $2 \times f_{\text{max}}$.
+        <div class="math-formula">
+          f_s \ge 2 \cdot f_{\text{max}}
+        </div>
+        Human speech spans frequencies up to approximately 8,000 Hz (8 kHz). Therefore, <strong>True Tone standardizes all incoming audio to 16,000 Hz (16 kHz)</strong>. Sampling at 16,000 samples per second preserves all speech frequencies up to 8,000 Hz while eliminating unnecessary high-frequency file size bloat.
+      </div>
+
+      <h3 class="h3-title"><i data-lucide="split"></i> 2.2 Time Domain vs. Frequency Domain</h3>
+      <p class="p-text">
+        When you record 4 seconds of audio at 16,000 Hz, your computer stores a simple 1D array of 64,000 floating-point numbers ($4 \times 16,000 = 64,000$). This is the <strong>time domain</strong>: it tells you <em>how loud</em> the signal was at each fraction of a millisecond, but it cannot tell you <em>which musical notes or pitch frequencies</em> were present!
+      </p>
+
+      <div class="analogy-card">
+        <div class="analogy-title"><i data-lucide="sparkles"></i> The Smoothie Analogy (Fourier Transform)</div>
+        <p class="p-text" style="margin-bottom: 0;">
+          A time-domain audio wave is like a delicious fruit smoothie: all ingredients (strawberries, bananas, milk) are mixed into one single liquid. The <strong>Fourier Transform</strong> is a mathematical machine that takes the smoothie and separates it back into individual bowls of strawberries, bananas, and milk. It breaks a complex audio wave into pure sine waves of distinct frequencies!
+        </p>
+      </div>
+
+      <h3 class="h3-title"><i data-lucide="grid"></i> 2.3 Short-Time Fourier Transform (STFT) &amp; Spectrograms</h3>
+      <p class="p-text">
+        Human speech changes rapidly over time. A person says "Hello", which contains different phonemes ('H', 'eh', 'l', 'o') every few milliseconds. To analyze frequencies over time, we use the <strong>Short-Time Fourier Transform (STFT)</strong>:
+      </p>
+      <ul class="p-text" style="padding-left: 24px;">
+        <li><strong>Framing:</strong> Chop the 64,000-sample audio array into small, overlapping chunks called <em>frames</em> (typically 25 milliseconds long = 400 samples at 16kHz).</li>
+        <li><strong>Hop Step:</strong> Slide the window forward by 10 milliseconds (160 samples), creating smooth continuity between frames.</li>
+        <li><strong>Windowing:</strong> Multiply each frame by a <em>Hamming window</em> so the edges taper smoothly to zero, preventing false frequency artifacts (spectral leakage).</li>
+        <li><strong>FFT:</strong> Compute the Fast Fourier Transform on each 25ms frame.</li>
+      </ul>
+      <p class="p-text">
+        The result is a 2D image called a <strong>Spectrogram</strong>, where the X-axis is Time, the Y-axis is Frequency, and the brightness/color represents Energy (loudness).
+      </p>
+    </section>
+
+    <!-- SECTION 3: MACHINE LEARNING PRIMER FOR AUDIO -->
+    <section class="doc-section" id="ml-primer">
+      <div class="section-header">
+        <h2 class="section-heading">
+          <i data-lucide="brain"></i>
+          3. Machine Learning Theory for Audio Classification
+        </h2>
+      </div>
+
+      <p class="p-text">
+        If you are new to Machine Learning, this section explains the exact mental models required to understand how computers learn to distinguish human voices from AI fakes.
+      </p>
+
+      <h3 class="h3-title"><i data-lucide="zap"></i> 3.1 What is Machine Learning?</h3>
+      <p class="p-text">
+        In traditional programming, a human engineer writes explicit rules: <code>if amplitude > 0.8: return "SPOOF"</code>. In Machine Learning, we don't write rules. Instead:
+      </p>
+      <ol class="p-text" style="padding-left: 24px;">
+        <li>We collect thousands of examples: 25,000 genuine human audio recordings and 25,000 synthetic AI-generated audio clips.</li>
+        <li>We define a mathematical model with millions of adjustable parameters (called <strong>weights</strong>, $W$, and <strong>biases</strong>, $b$).</li>
+        <li>We show the model an audio clip. The model makes a guess (e.g. 85% spoof probability).</li>
+        <li>We calculate the difference between the model's guess and the true label using a <strong>Loss Function</strong>.</li>
+        <li>Using calculus (<strong>Backpropagation and Gradient Descent</strong>), we nudge each weight slightly to make the model more accurate on the next attempt.</li>
+      </ol>
+
+      <h3 class="h3-title"><i data-lucide="help-circle"></i> 3.2 Why Not Use MFCC? (The Critical Audio Spoofing Insight)</h3>
+      <p class="p-text">
+        In standard speech recognition (Siri, Alexa), engineers use <strong>MFCC (Mel-Frequency Cepstral Coefficients)</strong>. The Mel scale mimics human ears by clustering lots of filters in low frequencies (0 – 1,000 Hz) where human speech vowels live, and compressing high frequencies (4,000 – 8,000 Hz).
+      </p>
+
+      <div class="warning-callout">
+        <strong>Why MFCC Fails for Deepfake Detection:</strong><br>
+        AI voice synthesizers and neural vocoders (like HiFi-GAN and MelGAN) sound very natural to human ears in the low frequencies. However, their mathematical generation algorithms introduce <strong>microscopic phase discontinuities and robotic spectral artifacts in the high linear frequency bands (4 kHz – 8 kHz)</strong>.<br>
+        MFCC discards these high-frequency details! If you use MFCC for spoof detection, the model is practically blind to vocoder artifacts.
+      </div>
+    </section>
+
+    <!-- SECTION 4: LFCC FEATURE EXTRACTION -->
+    <section class="doc-section" id="feature-extraction">
+      <div class="section-header">
+        <h2 class="section-heading">
+          <i data-lucide="sliders"></i>
+          4. Linear Frequency Cepstral Coefficients (LFCC)
+        </h2>
+      </div>
+
+      <p class="p-text">
+        True Tone utilizes <strong>Linear Frequency Cepstral Coefficients (LFCC)</strong>. Unlike MFCC, LFCC spaces its triangular filters linearly across the entire frequency range from 0 Hz to 8,000 Hz, preserving the critical high-frequency vocoder signatures.
+      </p>
+
+      <div class="pipeline-step-box">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <div class="step-title">Pre-Emphasis Filter</div>
+          <p class="p-text" style="font-size: 0.92rem; margin-bottom: 6px;">
+            Human speech has a natural spectral tilt: low frequencies carry high acoustic energy, while high frequencies carry very low energy. We apply a finite impulse response (FIR) filter:
+          </p>
+          <div class="math-formula">y[t] = x[t] - \alpha \cdot x[t-1] \quad (\alpha = 0.97)</div>
+          <p class="p-text" style="font-size: 0.88rem; margin-bottom: 0;">
+            This amplifies high-frequency energy by up to 20 dB, making subtle synthetic artifacts easily visible to neural network layers.
+          </p>
+        </div>
+      </div>
+
+      <div class="pipeline-step-box">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <div class="step-title">Linear Triangular Filterbank &amp; Log Energy</div>
+          <p class="p-text" style="font-size: 0.92rem; margin-bottom: 6px;">
+            We place 40 equally spaced triangular bandpass filters from 0 Hz to 8,000 Hz. For each 25ms frame, we multiply the FFT power spectrum by these 40 filters and compute the natural logarithm of the energy:
+          </p>
+          <div class="math-formula">E_m = \ln \left( \sum_{k=0}^{N-1} |X[k]|^2 \cdot H_m[k] \right)</div>
+          <p class="p-text" style="font-size: 0.88rem; margin-bottom: 0;">
+            The logarithm mimics human hearing (which perceives loudness logarithmically) and compresses dynamic range.
+          </p>
+        </div>
+      </div>
+
+      <div class="pipeline-step-box">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <div class="step-title">Discrete Cosine Transform (DCT-II)</div>
+          <p class="p-text" style="font-size: 0.92rem; margin-bottom: 6px;">
+            Adjacent filterbank energies are strongly correlated with each other. We apply DCT-II to decorrelate them and extract the first 20 static cepstral coefficients ($c_0$ through $c_{19}$):
+          </p>
+          <div class="math-formula">c_n = \sum_{m=0}^{M-1} E_m \cdot \cos \left( \frac{\pi n (m + 0.5)}{M} \right)</div>
+        </div>
+      </div>
+
+      <div class="pipeline-step-box">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <div class="step-title">Delta (&Delta;) &amp; Delta-Delta (&Delta;&Delta;) Temporal Derivatives</div>
+          <p class="p-text" style="font-size: 0.92rem; margin-bottom: 6px;">
+            Static coefficients tell us the vocal tract shape at an instant. But human speech is dynamic! Real human vocal cords accelerate and change pitch smoothly according to human muscle biomechanics, while AI synthesizers often have unnatural instantaneous jumps. We calculate:
+          </p>
+          <ul class="p-text" style="font-size: 0.88rem; padding-left: 20px; margin-bottom: 6px;">
+            <li><strong>Velocity (&Delta;):</strong> First-order derivative over time ($d_t$).</li>
+            <li><strong>Acceleration (&Delta;&Delta;):</strong> Second-order derivative over time ($d'_t$).</li>
+          </ul>
+          <p class="p-text" style="font-size: 0.9rem; margin-bottom: 0; color: var(--cyan-neon);">
+            Total Feature Dimensions: <strong>20 Static + 20 Delta + 20 Delta-Delta = 60 Features per time frame!</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="code-container">
+        <div class="code-header">
+          <span class="code-title"><i data-lucide="file-code"></i> src/audio/features.py (Core LFCC Extraction)</span>
+          <button class="copy-button" onclick="navigator.clipboard.writeText('Extract LFCC code')">Copy</button>
+        </div>
+        <pre><code><span class="kwd">def</span> <span class="fn">extract_lfcc</span>(waveform, sample_rate=<span class="num">16000</span>, num_cepstral=<span class="num">20</span>, num_filters=<span class="num">40</span>, target_frames=<span class="num">400</span>):
+    <span class="com"># 1. Pre-emphasis filtering (boost high frequencies where vocoder anomalies live)</span>
+    emphasized = waveform[:, <span class="num">1</span>:] - <span class="num">0.97</span> * waveform[:, :-<span class="num">1</span>]
+    
+    <span class="com"># 2. Short-Time Fourier Transform (25ms window, 10ms hop step)</span>
+    stft = torch.stft(emphasized, n_fft=<span class="num">512</span>, hop_length=<span class="num">160</span>, win_length=<span class="num">400</span>, window=torch.hamming_window(<span class="num">400</span>))
+    power_spec = stft.pow(<span class="num">2</span>).sum(-<span class="num">1</span>)
+    
+    <span class="com"># 3. Apply 40 linear triangular filterbanks</span>
+    filterbank = get_linear_filterbank(num_filters, n_fft=<span class="num">512</span>, sr=sample_rate)
+    linear_energies = torch.matmul(filterbank, power_spec)
+    log_energies = torch.log(torch.clamp(linear_energies, min=<span class="num">1e-10</span>))
+    
+    <span class="com"># 4. Discrete Cosine Transform (DCT) -> 20 static coefficients</span>
+    static_lfcc = apply_dct(log_energies)[:num_cepstral]
+    
+    <span class="com"># 5. Compute Velocity (Delta) and Acceleration (Delta-Delta)</span>
+    delta = compute_delta(static_lfcc)
+    delta_delta = compute_delta(delta)
+    
+    <span class="com"># Final stacked 60-dimensional matrix: (Batch, 400 frames, 60 features)</span>
+    features = torch.cat([static_lfcc, delta, delta_delta], dim=<span class="num">1</span>)
+    <span class="kwd">return</span> pad_or_truncate(features, target_frames)</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION 5: DEEP LEARNING MODEL ARCHITECTURE -->
+    <section class="doc-section" id="model-architecture">
+      <div class="section-header">
+        <h2 class="section-heading">
+          <i data-lucide="cpu"></i>
+          5. Deep Learning Model Architecture
+        </h2>
+      </div>
+
+      <p class="p-text">
+        The neural network in [`src/audio/model.py`](file:///c:/Users/bipul/OneDrive/Documents/GitHub/True%20Tone%20SIH/True-Tone-sih/src/audio/model.py) is called <strong>AudioSpoofDetector</strong>. It uses a hybrid architecture combining three distinct neural paradigms:
+      </p>
+
+      <div class="grid-3">
+        <div class="card-box" style="border-top: 3px solid var(--cyan-neon);">
+          <span class="card-tag">Layer 1: Spatial Pattern Detection</span>
+          <h3 class="card-h">1D Convolutional Front-End</h3>
+          <p class="p-text" style="font-size: 0.9rem;">
+            Treats the 60 acoustic features as input channels. Learns localized spatial filters that recognize harmonic pitch ripples and vocoder noise bands.
+          </p>
+        </div>
+
+        <div class="card-box" style="border-top: 3px solid var(--purple-neon);">
+          <span class="card-tag">Layer 2: Temporal Sequence Memory</span>
+          <h3 class="card-h">Bidirectional LSTM</h3>
+          <p class="p-text" style="font-size: 0.9rem;">
+            Processes speech over time in two directions (forward and backward). Understands how phonemes flow naturally from past into future.
+          </p>
+        </div>
+
+        <div class="card-box" style="border-top: 3px solid var(--emerald-neon);">
+          <span class="card-tag">Layer 3: Focus Mechanism</span>
+          <h3 class="card-h">Temporal Self-Attention</h3>
+          <p class="p-text" style="font-size: 0.9rem;">
+            Scans all 100 compressed time frames and calculates a dynamic attention weight. Focuses on the exact milliseconds where acoustic glitches occur.
+          </p>
+        </div>
+      </div>
+
+      <h3 class="h3-title"><i data-lucide="layers"></i> 5.1 Step-by-Step Data Flow Diagram</h3>
+      <div class="code-container">
+        <div class="code-header">
+          <span class="code-title"><i data-lucide="git-commit"></i> Tensor Dimension Progression Through the Network</span>
+        </div>
+        <pre><code>Input Tensor: (Batch Size, 400 Time Frames, 60 LFCC Features)
+  │
+  ├── Permute &rarr; (Batch, 60 Channels, 400 Length)
+  │
+  ├── Conv1D (in=60, out=64, kernel=3, padding=1) + BatchNorm1d(64) + ReLU
+  ├── MaxPool1D (kernel=2) &rarr; Reduces time resolution from 400 to 200
+  │
+  ├── Conv1D (in=64, out=128, kernel=3, padding=1) + BatchNorm1d(128) + ReLU
+  ├── MaxPool1D (kernel=2) &rarr; Reduces time resolution from 200 to 100
+  ├── Dropout (p=0.30) &rarr; Prevents neural weight overfitting
+  │
+  ├── Permute &rarr; (Batch, 100 Time Frames, 128 Channels)
+  │
+  ├── Bidirectional LSTM (2 Layers, Hidden Size = 128, Dropout = 0.3)
+  │    Forward pass: 128 dimensions
+  │    Backward pass: 128 dimensions
+  │    Output: (Batch, 100 Frames, 256 Features)
+  │
+  ├── Temporal Multi-Head Self-Attention:
+  │    Energy = Linear(256 &rarr; 64) &rarr; Tanh &rarr; Linear(64 &rarr; 1)
+  │    Weights = Softmax(Energy, dim=time)
+  │    Context Vector = Weighted Sum of all 100 frames &rarr; (Batch, 256)
+  │
+  └── Classification MLP Head:
+       Linear(256 &rarr; 64) &rarr; ReLU &rarr; Dropout(0.3) &rarr; Linear(64 &rarr; 1)
+       Sigmoid Function &rarr; Output Probability between 0.0 (Human) and 1.0 (AI Spoof)</code></pre>
+      </div>
+
+      <details class="deep-dive">
+        <summary><i data-lucide="help-circle"></i> Deep Dive for Beginners: How does LSTM Memory work?</summary>
+        <div class="deep-dive-body">
+          <p class="p-text">
+            Standard neural networks have no memory: each input frame is processed in total isolation. But speech is inherently sequential: whether a sound is natural depends heavily on what was said 100 milliseconds earlier!
+          </p>
+          <p class="p-text">
+            An <strong>LSTM (Long Short-Term Memory)</strong> network solves this using a specialized memory cell guarded by three mathematical gates:
+          </p>
+          <ul class="p-text" style="padding-left: 20px;">
+            <li><strong>Forget Gate ($f_t$):</strong> Decides what information from previous words to throw away.</li>
+            <li><strong>Input Gate ($i_t$):</strong> Decides what new acoustic details to store into memory.</li>
+            <li><strong>Output Gate ($o_t$):</strong> Decides what information to output to the next layer.</li>
+          </ul>
+          <p class="p-text" style="margin-bottom: 0;">
+            Because True Tone uses a <em>Bidirectional</em> LSTM, the network reads the speech sentence from left-to-right AND right-to-left simultaneously, catching inconsistencies in phonetic transitions regardless of sentence position.
+          </p>
+        </div>
+      </details>
+    </section>
+
+    <!-- SECTION 6: LOSS FUNCTIONS & EVALUATION METRICS -->
+    <section class="doc-section" id="loss-metrics">
+      <div class="section-header">
+        <h2 class="section-heading">
+          <i data-lucide="target"></i>
+          6. Loss Functions &amp; Evaluation Metrics
+        </h2>
+      </div>
+
+      <p class="p-text">
+        How do we measure if an audio anti-spoofing model is actually good? Accuracy alone is misleading because security datasets are often imbalanced. We use international biometric standards.
+      </p>
+
+      <h3 class="h3-title"><i data-lucide="percent"></i> 6.1 Binary Cross-Entropy (BCE) Loss</h3>
+      <p class="p-text">
+        During training, the model outputs a probability $\hat{y} \in [0, 1]$ where $y = 0$ is authentic human voice and $y = 1$ is an AI spoof. The loss function penalizes confident wrong guesses exponentially:
+      </p>
+      <div class="math-formula">
+        \mathcal{L}_{\text{BCE}} = -\frac{1}{N} \sum_{i=1}^{N} \left[ y_i \ln(\hat{y}_i) + (1 - y_i) \ln(1 - \hat{y}_i) \right]
+      </div>
+
+      <h3 class="h3-title"><i data-lucide="scale"></i> 6.2 The Biometric Tradeoff: FAR vs. FRR</h3>
+      <p class="p-text">
+        Every biometric classification decision uses a decision threshold $\theta \in [0, 1]$:
+      </p>
+      <ul class="p-text" style="padding-left: 24px;">
+        <li>If probability $\ge \theta$: Classify as <strong>AI SPOOF</strong>.</li>
+        <li>If probability $&lt; \theta$: Classify as <strong>GENUINE HUMAN</strong>.</li>
+      </ul>
+
+      <div class="grid-2">
+        <div class="card-box">
+          <span class="card-tag" style="color: var(--rose-neon);">False Alarm Rate (FAR / Miss Rate)</span>
+          <h4 class="card-h" style="font-size: 1.05rem;">An AI Deepfake is Missed</h4>
+          <p class="p-text" style="font-size: 0.88rem;">
+            A synthetic AI voice is falsely accepted as a genuine human. In banking, this allows a fraudster to steal money.
+          </p>
+        </div>
+
+        <div class="card-box">
+          <span class="card-tag" style="color: var(--amber-neon);">False Rejection Rate (FRR / False Alarm)</span>
+          <h4 class="card-h" style="font-size: 1.05rem;">A Real Human is Blocked</h4>
+          <p class="p-text" style="font-size: 0.88rem;">
+            A legitimate customer is falsely accused of being an AI deepfake. Their call is dropped, creating customer frustration.
+          </p>
+        </div>
+      </div>
+
+      <h3 class="h3-title"><i data-lucide="check-check"></i> 6.3 Equal Error Rate (EER)</h3>
+      <p class="p-text">
+        If you make the threshold very high ($\theta = 0.95$), you almost never block real humans, but fraudsters slip through easily. If you make it very low ($\theta = 0.10$), you catch all fraudsters, but you block innocent customers.
+      </p>
+      <div class="info-callout">
+        <strong>Definition of Equal Error Rate (EER):</strong><br>
+        The <strong>Equal Error Rate (EER)</strong> is the exact operational threshold where the False Acceptance Rate equals the False Rejection Rate ($\text{FAR} = \text{FRR}$).<br>
+        <strong>Lower is better.</strong> True Tone achieved an EER of <strong>0.0022% (0.000022)</strong> on the ASVspoof 2019 benchmark dataset.
+      </div>
+    </section>
+
+    <!-- SECTION 7: DETAILED TECHNOLOGY STACK BREAKDOWN -->
+    <section class="doc-section" id="tech-stack">
+      <div class="section-header">
+        <h2 class="section-heading">
+          <i data-lucide="layers"></i>
+          7. Comprehensive Technology Stack Architecture
+        </h2>
+        <span class="hero-badge badge-cyan">Full-Stack Defense Ecosystem</span>
+      </div>
+
+      <p class="p-text">
+        True Tone SIH is engineered as a hardened, high-throughput cyber defense platform that bridges low-latency acoustic digital signal processing (DSP), deep recurrent-attentive neural networks, kernel-aware network security middleware, and real-time VoIP streaming protocols. Below is the complete layer-by-layer architectural decomposition of every technology, library, protocol, and standard deployed across the system.
+      </p>
+
+      <!-- Layer 1: DSP & Audio -->
+      <div class="tech-layer-card" style="border-top: 3px solid var(--cyan-neon);">
+        <div class="tech-layer-header">
+          <div class="tech-layer-title">
+            <i data-lucide="waveform" style="color: var(--cyan-neon);"></i>
+            Layer 1: Acoustic Signal Processing &amp; Digital Audio I/O
+          </div>
+          <span class="hero-badge badge-cyan">Acoustic Foundation</span>
+        </div>
+        <p class="p-text" style="font-size: 0.92rem; margin-bottom: 8px;">
+          Responsible for raw acoustic waveform ingestion, polyphase rational anti-aliasing resampling to 16,000 Hz, dynamic peak AGC normalization, and extracting 60-dimensional Linear Frequency Cepstral Coefficients (LFCC) alongside multi-metric voice activity detection (VAD).
+        </p>
+
+        <div class="tech-pill-group">
+          <span class="tech-tag-badge cyan">Python 3.10+ / 3.13</span>
+          <span class="tech-tag-badge cyan">PyTorch 2.x</span>
+          <span class="tech-tag-badge cyan">TorchAudio</span>
+          <span class="tech-tag-badge cyan">SciPy Signal</span>
+          <span class="tech-tag-badge cyan">NumPy</span>
+          <span class="tech-tag-badge cyan">SoundFile &amp; Librosa</span>
+          <span class="tech-tag-badge cyan">Scikit-Learn</span>
+        </div>
+
+        <div class="tech-item-grid">
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>PyTorch &amp; TorchAudio</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--cyan-neon);">v2.2+</span></div>
+            <div class="tech-sub-role">Accelerated GPU/CPU tensor computations, Short-Time Fourier Transforms (STFT), framing, and Hamming windowing functions executed with zero Python interpreter overhead.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>SciPy (scipy.signal)</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--cyan-neon);">v1.12+</span></div>
+            <div class="tech-sub-role">Provides <code>resample_poly</code>: rational polyphase FIR filtering that converts 8kHz, 44.1kHz, and 48kHz audio to 16kHz without high-frequency aliasing or phase distortion.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>NumPy Vectorized DSP</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--cyan-neon);">v1.26+ / v2.0+</span></div>
+            <div class="tech-sub-role">C-contiguous memory buffer manipulation, fast autocorrelation for pitch detection (70Hz - 500Hz), RMS energy calculations, and dynamic gain scaling.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>SoundFile &amp; Librosa</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--cyan-neon);">libsndfile</span></div>
+            <div class="tech-sub-role">Lossless audio codec decoding across 16-bit / 24-bit linear PCM WAV, Free Lossless Audio Codec (FLAC), and MPEG-1 Layer III (MP3) formats.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 2: Deep Learning Model -->
+      <div class="tech-layer-card" style="border-top: 3px solid var(--purple-neon);">
+        <div class="tech-layer-header">
+          <div class="tech-layer-title">
+            <i data-lucide="brain" style="color: var(--purple-neon);"></i>
+            Layer 2: Deep Learning Neural Network Architecture
+          </div>
+          <span class="hero-badge badge-purple">1.49M Parameters</span>
+        </div>
+        <p class="p-text" style="font-size: 0.92rem; margin-bottom: 8px;">
+          The neural backbone that maps 400 time frames of 60-dim LFCC tensors into a calibrated deepfake probability score using a hybrid 1D CNN &rarr; Bidirectional LSTM &rarr; Temporal Self-Attention pipeline.
+        </p>
+
+        <div class="tech-pill-group">
+          <span class="tech-tag-badge purple">1D Convolutional Front-End</span>
+          <span class="tech-tag-badge purple">BatchNorm1d &amp; ReLU</span>
+          <span class="tech-tag-badge purple">2-Layer BiLSTM</span>
+          <span class="tech-tag-badge purple">Temporal Multi-Head Self-Attention</span>
+          <span class="tech-tag-badge purple">MLP Classification Head</span>
+          <span class="tech-tag-badge purple">PyTorch .pt Checkpoint</span>
+        </div>
+
+        <div class="tech-item-grid">
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>1D CNN Front-End</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--purple-neon);">Conv1d</span></div>
+            <div class="tech-sub-role">Learns 64 and 128 channel spatial acoustic filters across frequency bands. Compresses 400 frames down to 100 via MaxPool1d while isolating harmonic vocoder glitches.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>Bidirectional LSTM</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--purple-neon);">2 Layers / 256 Dim</span></div>
+            <div class="tech-sub-role">Maintains recurrent phoneme memory forward and backward in time. Captures unnatural speech cadence, synthetic rhythm flatness, and sudden vocoder pitch leaps.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>Multi-Head Self-Attention</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--purple-neon);">Temporal Pooling</span></div>
+            <div class="tech-sub-role">Computes softmax energy weights across all 100 compressed time frames, collapsing temporal sequences into a dense 256-dimensional context vector focused on acoustic glitches.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>Calibrated Sigmoid Head</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--purple-neon);">Threshold &theta; = 0.40</span></div>
+            <div class="tech-sub-role">Linear projection (256 &rarr; 64 &rarr; 1) with Dropout(0.3) and Sigmoid activation. Calibrated to 0.40 threshold for zero-tolerance biometric authentication.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 3: Network Security & Firewall -->
+      <div class="tech-layer-card" style="border-top: 3px solid var(--emerald-neon);">
+        <div class="tech-layer-header">
+          <div class="tech-layer-title">
+            <i data-lucide="shield" style="color: var(--emerald-neon);"></i>
+            Layer 3: Network Security, Firewall &amp; Active Threat Mitigation
+          </div>
+          <span class="hero-badge" style="background: var(--emerald-glow); color: var(--emerald-neon); border: 1px solid rgba(16, 185, 129, 0.4);">Active Defense</span>
+        </div>
+        <p class="p-text" style="font-size: 0.92rem; margin-bottom: 8px;">
+          The cyber defense engine that closes the gap between AI classification and active IP perimeter mitigation, dropping malicious calls in real time and maintaining state across system reboots.
+        </p>
+
+        <div class="tech-pill-group">
+          <span class="tech-tag-badge emerald">ASGI Security Middleware</span>
+          <span class="tech-tag-badge emerald">L1 In-Memory RAM Cache</span>
+          <span class="tech-tag-badge emerald">L2 SQLite 3 Database (WAL Mode)</span>
+          <span class="tech-tag-badge emerald">Multi-Frame Hysteresis State Machine</span>
+          <span class="tech-tag-badge emerald">STIR/SHAKEN PASSPorT</span>
+          <span class="tech-tag-badge emerald">eBPF / XDP Kernel Driver (Target)</span>
+        </div>
+
+        <div class="tech-item-grid">
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>L1 RAM Cache</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--emerald-neon);">&lt; 0.05 ms Lookups</span></div>
+            <div class="tech-sub-role">Thread-safe in-memory dictionary mapping IP addresses to TTL timestamps. Delivers sub-microsecond line-rate connection checks during high-volume call floods.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>L2 SQLite Persistence</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--emerald-neon);">ACID Storage</span></div>
+            <div class="tech-sub-role">Persistent relational storage in <code>models/security_firewall.db</code> with indexed tables for <code>blocked_ips</code>, <code>incident_logs</code>, and <code>ip_reputation</code>.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>ASGI Interceptor Middleware</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--emerald-neon);">Starlette ASGI</span></div>
+            <div class="tech-sub-role">Extracts originating client IP addresses through proxy chains (resolving <code>X-Forwarded-For</code>, <code>X-Real-IP</code>, and <code>X-Caller-IP</code>) and terminates 403 Forbidden connections.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>Multi-Frame Hysteresis</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--emerald-neon);">2-Strike Trigger</span></div>
+            <div class="tech-sub-role">Progressive threat escalation: Strike 1 alerts operators (THREAT_SUSPECTED); Strike 2 terminates calls with code 4403 and quarantines IP (THREAT_NEUTRALIZED).</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 4: Real-Time VoIP Gateway & Web API -->
+      <div class="tech-layer-card" style="border-top: 3px solid var(--blue-accent);">
+        <div class="tech-layer-header">
+          <div class="tech-layer-title">
+            <i data-lucide="radio" style="color: var(--blue-accent);"></i>
+            Layer 4: Real-Time VoIP Gateway &amp; Web API Engine
+          </div>
+          <span class="hero-badge" style="background: rgba(56, 189, 248, 0.15); color: var(--blue-accent); border: 1px solid rgba(56, 189, 248, 0.4);">VoIP Gateway</span>
+        </div>
+        <p class="p-text" style="font-size: 0.92rem; margin-bottom: 8px;">
+          Asynchronous edge server providing high-throughput RESTful management endpoints and full-duplex WebSocket channels for streaming 16kHz PCM audio chunks directly from live VoIP telephony calls.
+        </p>
+
+        <div class="tech-pill-group">
+          <span class="tech-tag-badge blue">FastAPI</span>
+          <span class="tech-tag-badge blue">Uvicorn ASGI Server</span>
+          <span class="tech-tag-badge blue">WebSockets Protocol (RFC 6455)</span>
+          <span class="tech-tag-badge blue">Pydantic v2 Schemas</span>
+          <span class="tech-tag-badge blue">OpenAPI / Swagger 3.0</span>
+          <span class="tech-tag-badge blue">Jinja2 Template Engine</span>
+        </div>
+
+        <div class="tech-item-grid">
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>FastAPI Framework</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--blue-accent);">v0.110+</span></div>
+            <div class="tech-sub-role">Modern asynchronous web framework utilizing Python type hints for compile-time validation, automatic documentation generation, and high concurrency.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>Uvicorn Engine</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--blue-accent);">uvloop + httptools</span></div>
+            <div class="tech-sub-role">High-performance ASGI server executing event loops in C via libuv, capable of handling tens of thousands of concurrent connections.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>WebSocket Streaming</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--blue-accent);">/ws/live-call</span></div>
+            <div class="tech-sub-role">Full-duplex bidirectional communication channel streaming binary PCM chunks, dispatching real-time acoustic telemetry, and terminating rogue connections.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>Pydantic v2 Schemas</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--blue-accent);">Rust Core</span></div>
+            <div class="tech-sub-role">High-speed data validation for manual IP unblocking, firewall rules, VoIP call simulation payloads, and telemetry response formatting.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 5: Frontend & Web Command Center -->
+      <div class="tech-layer-card" style="border-top: 3px solid var(--amber-neon);">
+        <div class="tech-layer-header">
+          <div class="tech-layer-title">
+            <i data-lucide="layout" style="color: var(--amber-neon);"></i>
+            Layer 5: Web Command Center &amp; Operator Dashboard
+          </div>
+          <span class="hero-badge" style="background: rgba(245, 158, 11, 0.15); color: var(--amber-neon); border: 1px solid rgba(245, 158, 11, 0.4);">Zero-Framework UI</span>
+        </div>
+        <p class="p-text" style="font-size: 0.92rem; margin-bottom: 8px;">
+          An ultra-responsive, zero-dependency operator interface crafted in pure modern Vanilla HTML5, CSS3, and JavaScript, ensuring rapid initial paint, low memory footprint, and real-time audio visualization.
+        </p>
+
+        <div class="tech-pill-group">
+          <span class="tech-tag-badge amber">HTML5 Semantic</span>
+          <span class="tech-tag-badge amber">Vanilla CSS3 (Glassmorphism)</span>
+          <span class="tech-tag-badge amber">Vanilla Modern JavaScript (ES6+)</span>
+          <span class="tech-tag-badge amber">Web Audio API</span>
+          <span class="tech-tag-badge amber">WebRTC MediaStream</span>
+          <span class="tech-tag-badge amber">Lucide Icons CDN</span>
+          <span class="tech-tag-badge amber">Google Fonts (Outfit &amp; JetBrains Mono)</span>
+        </div>
+
+        <div class="tech-item-grid">
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>Web Audio API Visualizer</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--amber-neon);">60 FPS Canvas</span></div>
+            <div class="tech-sub-role">Binds to local microphone streams via <code>AudioContext</code> and <code>AnalyserNode</code>, computing real-time Fast Fourier Transforms for HTML5 canvas frequency rendering.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>Pure Vanilla ES6+ Client</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--amber-neon);">Zero Bundlers</span></div>
+            <div class="tech-sub-role">Native WebSocket state machine managing call sessions, telemetry ticker polling, audio blob uploads, and firewall IP management with zero heavy dependencies.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>CSS3 Glassmorphic Design</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--amber-neon);">Custom Design System</span></div>
+            <div class="tech-sub-role">Custom CSS Custom Properties (tokens), backdrop-filter blur, glowing neon borders, responsive CSS Grid and Flexbox layouts for mission-critical SOC operations.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>Typography &amp; Iconography</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--amber-neon);">CDN-Delivered</span></div>
+            <div class="tech-sub-role">Modern typography via Google Fonts (Outfit for headings, Inter for body copy, JetBrains Mono for metrics) combined with clean Lucide SVG icons.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 6: DevOps, Testing & Datasets -->
+      <div class="tech-layer-card" style="border-top: 3px solid var(--rose-neon);">
+        <div class="tech-layer-header">
+          <div class="tech-layer-title">
+            <i data-lucide="flask-conical" style="color: var(--rose-neon);"></i>
+            Layer 6: DevOps, QA Testing &amp; Benchmark Datasets
+          </div>
+          <span class="hero-badge" style="background: rgba(244, 63, 94, 0.15); color: var(--rose-neon); border: 1px solid rgba(244, 63, 94, 0.4);">QA &amp; Evaluation</span>
+        </div>
+        <p class="p-text" style="font-size: 0.92rem; margin-bottom: 8px;">
+          The verification and evaluation infrastructure ensuring zero regressions, rigorous metric calculation, and continuous benchmarking against state-of-the-art synthetic voice datasets.
+        </p>
+
+        <div class="tech-pill-group">
+          <span class="tech-tag-badge rose">Pytest QA Harness</span>
+          <span class="tech-tag-badge rose">ASVspoof 2019 LA Dataset</span>
+          <span class="tech-tag-badge rose">WaveFake Multi-Vocoder Benchmark</span>
+          <span class="tech-tag-badge rose">EER &amp; minDCF Evaluators</span>
+          <span class="tech-tag-badge rose">Python Unittest</span>
+        </div>
+
+        <div class="tech-item-grid">
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>Pytest Test Suite</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--rose-neon);">15 Test Cases</span></div>
+            <div class="tech-sub-role">Automated unit and integration testing covering edge cases: total silence, pure white noise, truncated frames, corrupted WAV headers, and firewall strike progression.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>ASVspoof 2019 LA</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--rose-neon);">121,461 Audio Clips</span></div>
+            <div class="tech-sub-role">Gold-standard logical access dataset spanning 17 distinct speech synthesis (TTS) and voice conversion (VC) architectures (A01 through A19) with multi-speaker variety.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>WaveFake Dataset</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--rose-neon);">100,000+ Clips</span></div>
+            <div class="tech-sub-role">Benchmarking partition covering modern neural vocoders: MelGAN, Parallel WaveGAN, Multi-Band MelGAN, HiFi-GAN, and WaveGlow for cross-domain generalization.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 7: Consortium Blockchain Architecture -->
+      <div class="tech-layer-card" style="border-top: 3px solid #818cf8;">
+        <div class="tech-layer-header">
+          <div class="tech-layer-title">
+            <i data-lucide="blocks" style="color: #818cf8;"></i>
+            Layer 7: Decentralized Blockchain Consortium Layer (Architecture)
+          </div>
+          <span class="hero-badge" style="background: rgba(129, 140, 248, 0.15); color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.4);">Web3 Ledger</span>
+        </div>
+        <p class="p-text" style="font-size: 0.92rem; margin-bottom: 8px;">
+          The decentralized trust architecture enabling financial institutions, law enforcement agencies, and telecom carriers to synchronize verified deepfake threat intelligence without a central point of failure.
+        </p>
+
+        <div class="tech-pill-group">
+          <span class="tech-tag-badge" style="border-color: rgba(129, 140, 248, 0.4); color: #818cf8; background: rgba(129, 140, 248, 0.1);">Solidity ^0.8.20</span>
+          <span class="tech-tag-badge" style="border-color: rgba(129, 140, 248, 0.4); color: #818cf8; background: rgba(129, 140, 248, 0.1);">Web3.py</span>
+          <span class="tech-tag-badge" style="border-color: rgba(129, 140, 248, 0.4); color: #818cf8; background: rgba(129, 140, 248, 0.1);">Ethereum L2 / Polygon CDK</span>
+          <span class="tech-tag-badge" style="border-color: rgba(129, 140, 248, 0.4); color: #818cf8; background: rgba(129, 140, 248, 0.1);">Off-Chain Merkle Tree Rollup</span>
+          <span class="tech-tag-badge" style="border-color: rgba(129, 140, 248, 0.4); color: #818cf8; background: rgba(129, 140, 248, 0.1);">Keccak-256 Hashes</span>
+        </div>
+
+        <div class="tech-item-grid">
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>ThreatIntelRegistry.sol</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: #818cf8;">EVM Contract</span></div>
+            <div class="tech-sub-role">Decentralized IP blacklist and Keccak-256 acoustic fingerprint registry. Authorized enterprise nodes broadcast confirmed spoof attacks across the consortium.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>ForensicAuditLedger.sol</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: #818cf8;">Merkle Rollup</span></div>
+            <div class="tech-sub-role">Scalable audit anchoring: bundles 1024 call inspection hashes off-chain into a single 32-byte Merkle root on-chain, keeping transaction fees at sub-cent levels.</div>
+          </div>
+          <div class="tech-sub-box">
+            <div class="tech-sub-name"><span>Web3.py Connector</span><span style="font-family: var(--font-mono); font-size: 0.78rem; color: #818cf8;">Python SDK</span></div>
+            <div class="tech-sub-role">Automated asynchronous transaction signer and event listener bridging FastAPI detection verdicts directly to smart contract JSON-RPC nodes.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Master Tech Comparison Table -->
+      <h3 class="h3-title"><i data-lucide="table"></i> 7.1 Master Technology Stack Reference Table</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Technology</th>
+            <th>Category / Layer</th>
+            <th>Version / Spec</th>
+            <th>Primary Architectural Role</th>
+            <th>Why Chosen (Technical Rationale)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Python</strong></td>
+            <td>Runtime Environment</td>
+            <td><code>3.10+ / 3.13</code></td>
+            <td>Core system execution &amp; service glue</td>
+            <td>Dominant ecosystem for PyTorch, SciPy DSP, and FastAPI ASGI support.</td>
+          </tr>
+          <tr>
+            <td><strong>PyTorch</strong></td>
+            <td>Deep Learning Framework</td>
+            <td><code>v2.2+</code></td>
+            <td>Neural modeling &amp; backpropagation</td>
+            <td>Dynamic computational graphs, C++ LibTorch backend, seamless CPU/CUDA switching.</td>
+          </tr>
+          <tr>
+            <td><strong>TorchAudio</strong></td>
+            <td>Audio Processing Library</td>
+            <td><code>v2.2+</code></td>
+            <td>Audio I/O &amp; tensor spectrograms</td>
+            <td>Direct integration with PyTorch tensors without intermediate NumPy conversions.</td>
+          </tr>
+          <tr>
+            <td><strong>SciPy Signal</strong></td>
+            <td>Scientific DSP Toolkit</td>
+            <td><code>v1.12+</code></td>
+            <td>Polyphase FIR rational resampling</td>
+            <td><code>resample_poly</code> prevents spectral aliasing; crucial for 16kHz voice standardization.</td>
+          </tr>
+          <tr>
+            <td><strong>FastAPI</strong></td>
+            <td>Web / ASGI Framework</td>
+            <td><code>v0.110+</code></td>
+            <td>REST API &amp; WebSocket Gateway</td>
+            <td>Native async/await, Starlette performance, automated OpenAPI documentation.</td>
+          </tr>
+          <tr>
+            <td><strong>Uvicorn</strong></td>
+            <td>ASGI Web Server</td>
+            <td><code>v0.28+</code></td>
+            <td>Production server process runner</td>
+            <td>Lightning-fast HTTP/1.1 and WebSocket handling via uvloop and httptools.</td>
+          </tr>
+          <tr>
+            <td><strong>WebSockets</strong></td>
+            <td>Streaming Network Protocol</td>
+            <td><code>RFC 6455</code></td>
+            <td>Live VoIP audio chunk streaming</td>
+            <td>Full-duplex persistent socket; eliminates HTTP handshake latency (&lt; 30ms streaming).</td>
+          </tr>
+          <tr>
+            <td><strong>SQLite 3</strong></td>
+            <td>Embedded Database</td>
+            <td><code>v3.45+ (WAL)</code></td>
+            <td>Persistent IP firewall &amp; audit logging</td>
+            <td>Zero configuration, zero separate daemon to crash, ACID compliance with WAL mode.</td>
+          </tr>
+          <tr>
+            <td><strong>Web Audio API</strong></td>
+            <td>In-Browser Audio Engine</td>
+            <td><code>W3C Standard</code></td>
+            <td>Real-time 60fps frequency spectrum</td>
+            <td>Hardware-accelerated frequency analysis inside the browser without server load.</td>
+          </tr>
+          <tr>
+            <td><strong>Pydantic</strong></td>
+            <td>Data Validation</td>
+            <td><code>v2.6+</code></td>
+            <td>Type safety &amp; schema enforcement</td>
+            <td>Rust-based core engine delivers 5-10x faster schema validation than Pydantic v1.</td>
+          </tr>
+          <tr>
+            <td><strong>Pytest</strong></td>
+            <td>Testing Framework</td>
+            <td><code>v8.0+</code></td>
+            <td>Automated ML &amp; security QA</td>
+            <td>Expressive assertions, fixture management, and parameterized test execution.</td>
+          </tr>
+          <tr>
+            <td><strong>Solidity</strong></td>
+            <td>Smart Contract Language</td>
+            <td><code>^0.8.20</code></td>
+            <td>Consortium threat sharing &amp; audit trail</td>
+            <td>EVM compatibility, overflow protection built-in, industry standard for consortium blockchains.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SECTION 8: REPOSITORY ARCHITECTURE & CODEBASE MAP -->
+    <section class="doc-section" id="codebase-map">
+      <div class="section-header">
+        <h2 class="section-heading">
+          <i data-lucide="folder-tree"></i>
+          8. Repository Architecture &amp; Codebase Map
+        </h2>
+      </div>
+
+      <p class="p-text">
+        True Tone SIH is organized into clear, decoupled layers spanning signal processing, neural modeling, IP network mitigation, and web dashboards:
+      </p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Module / File</th>
+            <th>Primary Class / Function</th>
+            <th>Responsibility &amp; Operational Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>src/audio/features.py</code></td>
+            <td><code>extract_lfcc()</code></td>
+            <td>FIR pre-emphasis, 40 linear filterbanks, DCT-II, delta &amp; acceleration features.</td>
+          </tr>
+          <tr>
+            <td><code>src/audio/model.py</code></td>
+            <td><code>AudioSpoofDetector</code></td>
+            <td>PyTorch neural model: 1D Conv front-end + 2-layer BiLSTM + Multi-Head Self-Attention.</td>
+          </tr>
+          <tr>
+            <td><code>src/audio/detector_service.py</code></td>
+            <td><code>AudioSpoofInferenceEngine</code></td>
+            <td>Singleton inference engine with adaptive energy floor and harmonic pitch autocorrelation VAD.</td>
+          </tr>
+          <tr>
+            <td><code>src/security/ip_blocker.py</code></td>
+            <td><code>IPBlockerManager</code></td>
+            <td>2-tier firewall: O(1) in-memory dictionary cache + persistent ACID SQLite storage.</td>
+          </tr>
+          <tr>
+            <td><code>src/security/middleware.py</code></td>
+            <td><code>IPBlockerSecurityMiddleware</code></td>
+            <td>FastAPI ASGI security middleware that intercepts HTTP &amp; WebSocket requests to drop banned IPs.</td>
+          </tr>
+          <tr>
+            <td><code>src/api/app.py</code></td>
+            <td><code>app (FastAPI)</code></td>
+            <td>REST endpoints (<code>/api/detect</code>, <code>/api/simulate-call</code>) and real-time WebSocket VoIP gateway (<code>/ws/live-call</code>).</td>
+          </tr>
+          <tr>
+            <td><code>src/web/static/js/dashboard.js</code></td>
+            <td><code>CommandCenter</code></td>
+            <td>WebRTC audio visualizer, real-time WebSocket telemetry, interactive dialer, and IP blocklist controls.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SECTION 9: DUAL-TIER IP FIREWALL -->
+    <section class="doc-section" id="firewall-engine">
+      <div class="section-header">
+        <h2 class="section-heading">
+          <i data-lucide="shield"></i>
+          9. Automated Dual-Tier IP Firewall
+        </h2>
+      </div>
+
+      <p class="p-text">
+        Most academic AI deepfake projects stop at classification: they output a number on screen and do nothing else. In a real cyberattack, an automated botnet can make 10,000 VoIP calls per hour. True Tone SIH integrates an <strong>Active Network Firewall</strong> that closes the loop between machine learning and network perimeter security.
+      </p>
+
+      <div class="grid-2">
+        <div class="card-box">
+          <span class="card-tag">Tier 1: High Velocity In-Memory Cache</span>
+          <h3 class="card-h">Sub-Microsecond Lookups</h3>
+          <p class="p-text" style="font-size: 0.9rem;">
+            A thread-safe Python dictionary in RAM mapping <code>ip -> expiration_datetime</code>. Checks incoming connections in less than <strong>0.05 milliseconds</strong> without hitting disk storage during high-volume call floods.
+          </p>
+        </div>
+
+        <div class="card-box">
+          <span class="card-tag">Tier 2: Persistent ACID SQLite Storage</span>
+          <h3 class="card-h">Durable Audit Trail</h3>
+          <p class="p-text" style="font-size: 0.9rem;">
+            Stores quarantined IPs, strike counts, threat scores, and forensic event details in <code>models/security_firewall.db</code>. Retains state across server reboots.
+          </p>
+        </div>
+      </div>
+
+      <h3 class="h3-title"><i data-lucide="repeat"></i> 9.1 Multi-Frame Strike Hysteresis</h3>
+      <p class="p-text">
+        In real-world telephony, a microphone can click, or a person might cough. If a security firewall banned a caller after a single anomalous audio frame, legitimate customers would frequently get disconnected. True Tone enforces a strict <strong>2-Strike State Machine</strong>:
+      </p>
+
+      <div class="pipeline-step-box">
+        <div class="step-number" style="border-color: var(--amber-neon); color: var(--amber-neon);">1</div>
+        <div class="step-content">
+          <div class="step-title">Strike 1: Elevated Threat Detected</div>
+          <p class="p-text" style="font-size: 0.9rem; margin-bottom: 0;">
+            Status transitions to <code>THREAT_SUSPECTED (ANALYZING_PHONEMES)</code>. The system logs an internal security alert and increases acoustic monitoring scrutiny, but allows the call to continue.
+          </p>
+        </div>
+      </div>
+
+      <div class="pipeline-step-box">
+        <div class="step-number" style="border-color: var(--rose-neon); color: var(--rose-neon);">2</div>
+        <div class="step-content">
+          <div class="step-title">Strike 2: Sustained Synthetic Speech Confirmed</div>
+          <p class="p-text" style="font-size: 0.9rem; margin-bottom: 0;">
+            Status transitions to <code>THREAT_NEUTRALIZED</code>. The WebSocket session is terminated (code 4403), the caller IP is instantly quarantined in the firewall with a 3600-second TTL, and a broadcast alert appears on the Command Center dashboard.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 10: OPERATIONAL RUNBOOK -->
+    <section class="doc-section" id="running-system">
+      <div class="section-header">
+        <h2 class="section-heading">
+          <i data-lucide="play-circle"></i>
+          10. Operational Runbook: How to Run &amp; Test
+        </h2>
+      </div>
+
+      <h3 class="h3-title"><i data-lucide="terminal"></i> 10.1 Starting the Defense Gateway</h3>
+      <p class="p-text">
+        Launch the complete defense ecosystem (FastAPI REST gateway, WebSocket real-time listener, and Command Center):
+      </p>
+      <div class="code-container">
+        <div class="code-header">
+          <span class="code-title"><i data-lucide="terminal"></i> PowerShell / Terminal</span>
+          <button class="copy-button" onclick="navigator.clipboard.writeText('python run_defense_system.py')">Copy</button>
+        </div>
+        <pre><code><span class="com"># From repository root directory:</span>
+python run_defense_system.py</code></pre>
+      </div>
+
+      <p class="p-text">
+        Once running, access the services:
+      </p>
+      <ul class="p-text" style="padding-left: 24px;">
+        <li><strong>Interactive Web Command Center:</strong> <a href="http://localhost:8000" target="_blank" style="color: var(--cyan-neon);">http://localhost:8000</a></li>
+        <li><strong>Swagger API Interactive Docs:</strong> <a href="http://localhost:8000/docs" target="_blank" style="color: var(--cyan-neon);">http://localhost:8000/docs</a></li>
+        <li><strong>Project Roadmap:</strong> <a href="http://localhost:8000/roadmap" target="_blank" style="color: var(--cyan-neon);">http://localhost:8000/roadmap</a></li>
+      </ul>
+
+      <h3 class="h3-title"><i data-lucide="flask-conical"></i> 10.2 Running Automated QA Test Suites</h3>
+      <p class="p-text">
+        The repository contains comprehensive automated test suites covering the ML inference pipeline, edge cases (silence, white noise, truncated audio), and firewall functionality:
+      </p>
+      <div class="code-container">
+        <div class="code-header">
+          <span class="code-title"><i data-lucide="terminal"></i> Run Pytest Suites</span>
+          <button class="copy-button" onclick="navigator.clipboard.writeText('pytest tests/test_model_pipeline.py -v')">Copy</button>
+        </div>
+        <pre><code><span class="com"># Test 1: Run comprehensive 15-point ML pipeline test suite</span>
+pytest tests/test_model_pipeline.py -v
+
+<span class="com"># Test 2: Run firewall and IP quarantine integration tests</span>
+pytest src/security/test_ip_blocking.py -v</code></pre>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // Initialize Lucide icons
+  lucide.createIcons();
+
+  // Scrollspy navigation
+  window.addEventListener('scroll', () => {
+    const sections = document.querySelectorAll('section[id], header[id]');
+    const scrollY = window.pageYOffset;
+
+    sections.forEach(current => {
+      const sectionHeight = current.offsetHeight;
+      const sectionTop = current.offsetTop - 120;
+      const sectionId = current.getAttribute('id');
+      const navLink = document.querySelector(`.nav-scroll-area a[href*="${sectionId}"]`);
+
+      if (navLink && scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+        document.querySelectorAll('.nav-scroll-area a').forEach(el => el.classList.remove('active'));
+        navLink.classList.add('active');
+      }
+    });
+  });
+
+  // Client-side doc search filter
+  const searchInput = document.getElementById('docSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      const sections = document.querySelectorAll('.doc-section');
+      sections.forEach(sec => {
+        const text = sec.innerText.toLowerCase();
+        if (query === '' || text.includes(query)) {
+          sec.style.display = 'block';
+        } else {
+          sec.style.display = 'none';
+        }
+      });
+    });
+  }
+</script>
+</body>
+</html>

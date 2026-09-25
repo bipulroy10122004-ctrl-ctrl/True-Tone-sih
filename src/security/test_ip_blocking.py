@@ -156,5 +156,8 @@ def run_e2e_security_test():
     except Exception:
         pass
 
+def test_e2e_security_pipeline():
+    run_e2e_security_test()
+
 if __name__ == "__main__":
     run_e2e_security_test()

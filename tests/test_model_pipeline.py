@@ -32,9 +32,10 @@ SAMPLES_DIR = os.path.join(PROJECT_ROOT, "samples")
 SAMPLE_SPOOF = os.path.join(SAMPLES_DIR, "sample_spoof_ai_voice.flac")
 SAMPLE_BONAFIDE = os.path.join(SAMPLES_DIR, "sample_bonafide_human_voice.flac")
 
-DATA_ROOT = "D:/True Tone SIH/data/LA"
-DEV_PROTO = os.path.join(DATA_ROOT, "ASVspoof2019_LA_cm_protocols", "ASVspoof2019.LA.cm.dev.trl.txt")
-DEV_FLAC = os.path.join(DATA_ROOT, "ASVspoof2019_LA_dev", "flac")
+DATA_ROOT = os.environ.get("ASVSPOOF_DATA_ROOT", "")
+DEV_PROTO = os.path.join(DATA_ROOT, "ASVspoof2019_LA_cm_protocols", "ASVspoof2019.LA.cm.dev.trl.txt") if DATA_ROOT else ""
+DEV_FLAC = os.path.join(DATA_ROOT, "ASVspoof2019_LA_dev", "flac") if DATA_ROOT else ""
+
 
 
 @pytest.fixture(scope="session")

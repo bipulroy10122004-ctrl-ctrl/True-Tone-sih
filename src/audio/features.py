@@ -90,12 +90,12 @@ def extract_lfcc(file_path, max_frames=400, n_lfcc=20):
         y = scipy.signal.resample_poly(y, up, down).astype(np.float32)
         sr = 16000
 
-    # Dynamic range normalization: gently normalize speech without amplifying quiet pauses or noise
+    # Dynamic range normalization: scale speech to standard reference amplitude
     max_amp = float(np.max(np.abs(y))) if len(y) > 0 else 0.0
-    rms = float(np.sqrt(np.mean(y ** 2))) if len(y) > 0 else 0.0
-    if max_amp >= 0.10 and rms >= 0.02:
-        norm_gain = min(2.5, 0.90 / max_amp)
+    if max_amp > 1e-4:
+        norm_gain = min(50.0, max(0.1, 0.85 / max_amp))
         y = (y * norm_gain).astype(np.float32)
+
 
     # Pre-emphasis
     y = pre_emphasis(y)

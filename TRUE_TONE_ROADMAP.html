@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>True Tone SIH | Master Execution Plan & Architecture</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-base: #06090f;
+      --bg-surface: #0c121d;
+      --bg-elevated: #121a29;
+      --bg-glass: rgba(18, 26, 41, 0.75);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(0, 242, 254, 0.3);
+      --cyan-neon: #00f2fe;
+      --cyan-glow: rgba(0, 242, 254, 0.15);
+      --blue-accent: #38bdf8;
+      --emerald-neon: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.15);
+      --purple-neon: #8b5cf6;
+      --purple-glow: rgba(139, 92, 246, 0.15);
+      --amber-neon: #f59e0b;
+      --rose-neon: #f43f5e;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-glow: 0 0 30px rgba(0, 242, 254, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.65;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 85% 65%, rgba(139, 92, 246, 0.04) 0%, transparent 45%),
+        linear-gradient(to bottom, rgba(6, 9, 15, 0.95), rgba(6, 9, 15, 1));
+      background-attachment: fixed;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    /* Container & Layout */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 290px;
+      background: rgba(12, 18, 29, 0.85);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--border-subtle);
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar-header {
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-subtitle {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--cyan-neon);
+      font-weight: 600;
+    }
+
+    .nav-menu {
+      flex: 1;
+      padding: 20px 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .nav-item:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-item.active {
+      color: var(--cyan-neon);
+      background: var(--cyan-glow);
+      border-color: rgba(0, 242, 254, 0.3);
+      font-weight: 600;
+    }
+
+    .nav-section-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      font-weight: 700;
+      padding: 16px 14px 6px;
+    }
+
+    /* Main Content Area */
+    .main-viewport {
+      margin-left: 290px;
+      flex: 1;
+      padding: 40px 60px 100px;
+      max-width: 1400px;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(18, 26, 41, 0.9), rgba(12, 18, 29, 0.7));
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 44px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 48px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(0, 242, 254, 0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 18px;
+    }
+
+    .badge-cyan {
+      background: var(--cyan-glow);
+      color: var(--cyan-neon);
+      border: 1px solid rgba(0, 242, 254, 0.4);
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.12rem;
+      color: var(--text-muted);
+      max-width: 820px;
+      margin-bottom: 28px;
+    }
+
+    .quick-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: rgba(12, 18, 29, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .stat-accent-cyan { color: var(--cyan-neon); }
+    .stat-accent-emerald { color: var(--emerald-neon); }
+    .stat-accent-purple { color: var(--purple-neon); }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Section Headers */
+    .section-block {
+      margin-bottom: 64px;
+      scroll-margin-top: 40px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 1.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #fff;
+    }
+
+    .section-title-icon {
+      color: var(--cyan-neon);
+    }
+
+    /* Tabs Component */
+    .tab-container {
+      margin-bottom: 28px;
+    }
+
+    .tab-pills {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-surface);
+      padding: 6px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      width: fit-content;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 10px 22px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+    }
+
+    .tab-btn.active {
+      background: var(--bg-elevated);
+      color: var(--cyan-neon);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+    }
+
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards & Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .card-glass {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 26px;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+
+    .card-glass:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-accent-border {
+      border-top: 3px solid var(--cyan-neon);
+    }
+    .card-accent-purple {
+      border-top: 3px solid var(--purple-neon);
+    }
+    .card-accent-emerald {
+      border-top: 3px solid var(--emerald-neon);
+    }
+    .card-accent-rose {
+      border-top: 3px solid var(--rose-neon);
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.22rem;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .card-text {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-bottom: 16px;
+    }
+
+    /* Execution Plan Timeline */
+    .timeline-wrapper {
+      position: relative;
+      padding-left: 36px;
+      margin-top: 24px;
+    }
+
+    .timeline-wrapper::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 10px;
+      bottom: 20px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--cyan-neon), var(--purple-neon), var(--emerald-neon));
+    }
+
+    .timeline-step {
+      position: relative;
+      margin-bottom: 36px;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -36px;
+      top: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 3px solid var(--cyan-neon);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timeline-step.completed .timeline-dot {
+      border-color: var(--emerald-neon);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .timeline-step.upcoming .timeline-dot {
+      border-color: var(--purple-neon);
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+    }
+
+    .timeline-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .phase-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .phase-badge.current {
+      background: var(--cyan-glow);
+      color: var(--cyan-neon);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+    }
+
+    .phase-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .task-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.02);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .task-item i {
+      color: var(--cyan-neon);
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+
+    /* Code Blocks */
+    .code-box {
+      background: #080c14;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin: 18px 0;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .code-box-header {
+      background: #0f1624;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .code-lang-label {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--cyan-neon);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    pre {
+      padding: 20px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+
+    .code-keyword { color: #f43f5e; font-weight: 600; }
+    .code-func { color: #38bdf8; }
+    .code-type { color: #a855f7; }
+    .code-string { color: #10b981; }
+    .code-comment { color: #64748b; font-style: italic; }
+
+    /* Comparison Tables */
+    .custom-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      margin: 20px 0;
+    }
+
+    .custom-table th {
+      background: #111927;
+      padding: 14px 18px;
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+      text-align: left;
+    }
+
+    .custom-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .custom-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .custom-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-main);
+    }
+
+    .badge-pill-sm {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Math Equation Container */
+    .math-card {
+      background: #080d17;
+      border-left: 4px solid var(--purple-neon);
+      padding: 16px 20px;
+      border-radius: var(--radius-sm);
+      margin: 16px 0;
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      color: #e2e8f0;
+      overflow-x: auto;
+    }
+
+    /* Interactive Diagram Nodes */
+    .diagram-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      margin: 24px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .flow-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .flow-node {
+      flex: 1;
+      min-width: 180px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      text-align: center;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+
+    .flow-node:hover {
+      border-color: var(--cyan-neon);
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+    }
+
+    .flow-node-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .flow-node-desc {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+
+    .flow-arrow {
+      color: var(--cyan-neon);
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 80px;
+      }
+      .brand-title, .brand-subtitle, .nav-item span, .nav-section-title {
+        display: none;
+      }
+      .sidebar-header {
+        justify-content: center;
+        padding: 20px 0;
+      }
+      .nav-item {
+        justify-content: center;
+        padding: 14px 0;
+      }
+      .main-viewport {
+        margin-left: 80px;
+        padding: 30px;
+      }
+      .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-icon">
+        <i data-lucide="shield-check" style="width: 24px; height: 24px;"></i>
+      </div>
+      <div>
+        <div class="brand-title">True Tone SIH</div>
+        <div class="brand-subtitle">Defense Blueprint</div>
+      </div>
+    </div>
+
+    <nav class="nav-menu">
+      <div class="nav-section-title">Navigation</div>
+      <a href="#overview" class="nav-item active">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Executive Status</span>
+      </a>
+      <a href="#execution-plan" class="nav-item">
+        <i data-lucide="calendar-clock"></i>
+        <span>Phased Execution</span>
+      </a>
+      <a href="#model-enhancements" class="nav-item">
+        <i data-lucide="cpu"></i>
+        <span>AI Model Upgrades</span>
+      </a>
+      <a href="#cybersecurity-plan" class="nav-item">
+        <i data-lucide="shield-alert"></i>
+        <span>Cybersecurity Layer</span>
+      </a>
+      <a href="#blockchain-plan" class="nav-item">
+        <i data-lucide="blocks"></i>
+        <span>Consortium Web3</span>
+      </a>
+      <a href="#decisions-matrix" class="nav-item">
+        <i data-lucide="check-circle-2"></i>
+        <span>Action Matrix</span>
+      </a>
+
+      <div class="nav-section-title">Quick Links</div>
+      <a href="http://localhost:8000" target="_blank" class="nav-item">
+        <i data-lucide="external-link"></i>
+        <span>Live Dashboard (8000)</span>
+      </a>
+      <a href="http://localhost:8000/docs" target="_blank" class="nav-item">
+        <i data-lucide="file-code"></i>
+        <span>FastAPI Docs</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Viewport -->
+  <main class="main-viewport">
+
+    <!-- Hero Header -->
+    <header class="hero-banner" id="overview">
+      <div class="badge-pill badge-cyan">
+        <i data-lucide="terminal" style="width: 14px; height: 14px;"></i>
+        Smart India Hackathon 2026 Edition
+      </div>
+      <h1 class="hero-title">Master Execution Plan & Technical Architecture</h1>
+      <p class="hero-desc">
+        A complete engineering roadmap for <strong>True Tone SIH</strong>: Scaling the sub-50ms acoustic anti-spoofing engine, hardening network-level automated IP defense, and implementing an immutable consortium blockchain forensic ledger.
+      </p>
+
+      <div class="quick-stats-grid">
+        <div class="stat-card">
+          <div class="stat-value stat-accent-cyan">0.0022%</div>
+          <div class="stat-label">Model EER (ASVspoof '19)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value stat-accent-emerald">&lt; 50 ms</div>
+          <div class="stat-label">End-to-End Latency</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value stat-accent-purple">Dual-Tier</div>
+          <div class="stat-label">L1 RAM / L2 SQLite Firewall</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">EVM &amp; eBPF</div>
+          <div class="stat-label">Future Defense Architecture</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Section 1: Executive Audit of Existing Progress -->
+    <section class="section-block">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i data-lucide="check-circle" class="section-title-icon"></i>
+          1. Current System Status Audit
+        </h2>
+        <span class="badge-pill badge-cyan">Phase 1-3 Verified</span>
+      </div>
+
+      <div class="grid-3">
+        <div class="card-glass card-accent-border">
+          <div class="card-title">
+            <i data-lucide="waveform" style="color: var(--cyan-neon);"></i>
+            Acoustic Signal Engine
+          </div>
+          <p class="card-text">
+            16kHz Polyphase FIR resampling, dynamic peak AGC normalization, 60-dim LFCC feature extraction with harmonic autocorrelation VAD.
+          </p>
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">
+            src/audio/features.py<br>src/audio/detector_service.py
+          </div>
+        </div>
+
+        <div class="card-glass card-accent-purple">
+          <div class="card-title">
+            <i data-lucide="brain" style="color: var(--purple-neon);"></i>
+            Neural Backbone
+          </div>
+          <p class="card-text">
+            1D CNN front-end (64 &rarr; 128ch), 2-layer Bidirectional LSTM, and temporal self-attention pooling with calibrated threshold at 0.40.
+          </p>
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">
+            src/audio/model.py<br>models/best_audio_spoof_model.pt
+          </div>
+        </div>
+
+        <div class="card-glass card-accent-emerald">
+          <div class="card-title">
+            <i data-lucide="shield" style="color: var(--emerald-neon);"></i>
+            Active Threat Mitigation
+          </div>
+          <p class="card-text">
+            2-tier firewall cache (O(1) in-memory dict + ACID SQLite), strike counter hysteresis, and ASGI security middleware packet rejection.
+          </p>
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">
+            src/security/ip_blocker.py<br>src/security/middleware.py
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Phased Execution Plan -->
+    <section class="section-block" id="execution-plan">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i data-lucide="calendar" class="section-title-icon"></i>
+          2. Strategic Execution Plan & Roadmap
+        </h2>
+        <span class="phase-badge current">70-Day Rollout</span>
+      </div>
+
+      <div class="timeline-wrapper">
+        <!-- Phase 1 -->
+        <div class="timeline-step completed">
+          <div class="timeline-dot"></div>
+          <div class="card-glass">
+            <div class="timeline-header">
+              <span class="phase-title">Phase 1: Out-of-Distribution Generalization & Stress-Testing</span>
+              <span class="phase-badge current">Days 1 – 15</span>
+            </div>
+            <p class="card-text">
+              Evaluate real-world robustness beyond the controlled ASVspoof 2019 dataset against In-The-Wild speech and diverse neural vocoders.
+            </p>
+            <ul class="task-list">
+              <li class="task-item">
+                <i data-lucide="arrow-right"></i>
+                <span><strong>Cross-Dataset Benchmarking:</strong> Run evaluation scripts across WaveFake (MelGAN, HiFi-GAN, WaveGlow) and In-The-Wild YouTube deepfakes.</span>
+              </li>
+              <li class="task-item">
+                <i data-lucide="arrow-right"></i>
+                <span><strong>Stochastic Codec Augmentation:</strong> Integrate online audio augmentations simulating G.711 (&mu;-law/A-law), Opus, and AMR-WB telephony compression.</span>
+              </li>
+              <li class="task-item">
+                <i data-lucide="arrow-right"></i>
+                <span><strong>Ambient Noise & Reverb Injection:</strong> Overlay MUSAN background babble/traffic noise and Room Impulse Response (RIR) reverberation.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="timeline-step upcoming">
+          <div class="timeline-dot"></div>
+          <div class="card-glass">
+            <div class="timeline-header">
+              <span class="phase-title">Phase 2: Architectural Evolution & Quantization</span>
+              <span class="phase-badge">Days 16 – 35</span>
+            </div>
+            <p class="card-text">
+              Transition from handcrafted LFCC parameters to raw waveform feature representations and accelerate edge inference.
+            </p>
+            <ul class="task-list">
+              <li class="task-item">
+                <i data-lucide="arrow-right"></i>
+                <span><strong>SincNet / RawNet2 Backbone:</strong> Implement learnable parametric bandpass sinc-filters directly on raw 16kHz audio waveforms.</span>
+              </li>
+              <li class="task-item">
+                <i data-lucide="arrow-right"></i>
+                <span><strong>Self-Supervised WavLM / HuBERT Fine-Tuning:</strong> Leverage frozen speech foundation representations for zero-shot multilingual resistance.</span>
+              </li>
+              <li class="task-item">
+                <i data-lucide="arrow-right"></i>
+                <span><strong>ONNX Runtime & INT8 Quantization:</strong> Export PyTorch model to ONNX with INT8 dynamic quantization to drop forward pass latency to &lt; 4ms.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div class="timeline-step upcoming">
+          <div class="timeline-dot"></div>
+          <div class="card-glass">
+            <div class="timeline-header">
+              <span class="phase-title">Phase 3: Industrial Cyber Defense Hardening</span>
+              <span class="phase-badge">Days 36 – 50</span>
+            </div>
+            <p class="card-text">
+              Bridge the AI detection engine directly into Linux kernel packet filtering and implement cryptographic logging integrity.
+            </p>
+            <ul class="task-list">
+              <li class="task-item">
+                <i data-lucide="arrow-right"></i>
+                <span><strong>Kernel-Level eBPF / XDP Integration:</strong> Drop malicious VoIP caller packets directly inside the NIC network driver before TCP/SSL socket handshakes.</span>
+              </li>
+              <li class="task-item">
+                <i data-lucide="arrow-right"></i>
+                <span><strong>Zero Trust mTLS & STIR/SHAKEN Verification:</strong> Authenticate enterprise PBX gateways with Mutual TLS and validate SIP caller identity certificates.</span>
+              </li>
+              <li class="task-item">
+                <i data-lucide="arrow-right"></i>
+                <span><strong>HMAC-SHA256 Cryptographic Audit Ledger:</strong> Chain incident logs sequentially so retroactive database tampering immediately breaks cryptographic validation.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div class="timeline-step upcoming">
+          <div class="timeline-dot"></div>
+          <div class="card-glass">
+            <div class="timeline-header">
+              <span class="phase-title">Phase 4: Decentralized Blockchain Consortium Layer</span>
+              <span class="phase-badge">Days 51 – 70</span>
+            </div>
+            <p class="card-text">
+              Deploy smart contracts across a banking/telecom consortium to share threat intelligence and anchor deepfake incidents immutably.
+            </p>
+            <ul class="task-list">
+              <li class="task-item">
+                <i data-lucide="arrow-right"></i>
+                <span><strong>Consortium Smart Contracts:</strong> Deploy Solidity contracts for decentralized IP quarantining and deepfake acoustic signature registries.</span>
+              </li>
+              <li class="task-item">
+                <i data-lucide="arrow-right"></i>
+                <span><strong>Merkle Tree Batch Rollup:</strong> Aggregate thousands of call inspections off-chain into 32-byte Merkle root commitments on-chain.</span>
+              </li>
+              <li class="task-item">
+                <i data-lucide="arrow-right"></i>
+                <span><strong>FastAPI Web3 Connector:</strong> Automate asynchronous blockchain event dispatch using Python web3.py service.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: AI Model Improvement Masterclass -->
+    <section class="section-block" id="model-enhancements">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i data-lucide="sparkles" class="section-title-icon"></i>
+          3. AI Model Improvement Strategies
+        </h2>
+        <span class="badge-pill badge-cyan">Theory &amp; Architecture</span>
+      </div>
+
+      <div class="tab-container">
+        <div class="tab-pills">
+          <button class="tab-btn active" onclick="switchTab('tab-features', this)">
+            <i data-lucide="sliders"></i> Feature Engineering
+          </button>
+          <button class="tab-btn" onclick="switchTab('tab-loss', this)">
+            <i data-lucide="target"></i> Metric Learning &amp; Loss
+          </button>
+          <button class="tab-btn" onclick="switchTab('tab-arch', this)">
+            <i data-lucide="network"></i> Graph &amp; Transformer Backbones
+          </button>
+          <button class="tab-btn" onclick="switchTab('tab-aug', this)">
+            <i data-lucide="volume-2"></i> Data Augmentation
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab 1: Feature Engineering -->
+      <div id="tab-features" class="tab-pane active">
+        <div class="grid-2">
+          <div class="card-glass">
+            <h3 class="card-title">1. Constant Q Cepstral Coefficients (CQCC)</h3>
+            <p class="card-text">
+              Standard LFCC uses uniform linear filterbanks suitable for high-frequency vocoder analysis (4kHz – 8kHz), but provides coarse resolution in low frequencies. CQCC uses geometrically spaced filters with constant quality factor:
+            </p>
+            <div class="math-card">
+              Q = \frac{f_k}{\Delta f_k} = \frac{f_k}{f_{k+1} - f_{k-1}} = \text{constant}
+            </div>
+            <p class="card-text">
+              <strong>Dual-Stream Fusion:</strong> Concatenating LFCC (60-dim) + CQCC (60-dim) provides complementary acoustic views: vocoder high-band phase artifacts + low-frequency pitch track anomalies.
+            </p>
+          </div>
+
+          <div class="card-glass">
+            <h3 class="card-title">2. Sinc-Convolutional Filterbanks (SincNet)</h3>
+            <p class="card-text">
+              Instead of handcrafted triangular filterbanks, SincNet constrains first-layer 1D CNN kernels to bandpass filters defined directly by cut-off frequencies:
+            </p>
+            <div class="math-card">
+              g[n, f_1, f_2] = 2f_2 \cdot \text{sinc}(2\pi f_2 n) - 2f_1 \cdot \text{sinc}(2\pi f_1 n)
+            </div>
+            <p class="card-text">
+              Only $f_1$ (lower cutoff) and $f_2$ (upper cutoff) are updated via gradient backpropagation, ensuring the neural network discovers discriminative anti-spoofing frequency sub-bands automatically.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Loss Functions -->
+      <div id="tab-loss" class="tab-pane">
+        <div class="card-glass">
+          <h3 class="card-title">Additive Angular Margin Softmax (ArcFace / AAM-Softmax)</h3>
+          <p class="card-text">
+            Standard Binary Cross-Entropy (BCE) optimizes separation boundaries, but does not enforce intra-class compactness. In biometrics, genuine human voices should form a tight cluster on the unit hypersphere:
+          </p>
+          <div class="math-card">
+            L_{\text{ArcFace}} = -\log \frac{e^{s \cdot \cos(\theta_{y_i} + m)}}{e^{s \cdot \cos(\theta_{y_i} + m)} + \sum_{j \neq y_i} e^{s \cdot \cos\theta_j}}
+          </div>
+          <p class="card-text">
+            Where <code>s</code> is the feature scale and <code>m</code> is the angular margin penalty. Synthetic voices are forced outside the human manifold, dramatically lowering the Equal Error Rate on unseen vocoders.
+          </p>
+        </div>
+      </div>
+
+      <!-- Tab 3: Architectures -->
+      <div id="tab-arch" class="tab-pane">
+        <div class="card-glass">
+          <h3 class="card-title">AASIST: Integrated Spectro-Temporal Graph Attention</h3>
+          <p class="card-text">
+            Standard 2D CNNs treat spectrograms like regular vision images. However, audio features possess heterogeneous temporal and spectral properties.
+          </p>
+          <div class="diagram-container">
+            <div class="flow-row">
+              <div class="flow-node">
+                <div class="flow-node-title">Raw Waveform</div>
+                <div class="flow-node-desc">Sinc-convolution front-end</div>
+              </div>
+              <div class="flow-arrow">&rarr;</div>
+              <div class="flow-node">
+                <div class="flow-node-title">Spectral Graph (GAT-S)</div>
+                <div class="flow-node-desc">Correlates harmonic sub-bands</div>
+              </div>
+              <div class="flow-arrow">&rarr;</div>
+              <div class="flow-node">
+                <div class="flow-node-title">Temporal Graph (GAT-T)</div>
+                <div class="flow-node-desc">Tracks temporal phoneme transitions</div>
+              </div>
+              <div class="flow-arrow">&rarr;</div>
+              <div class="flow-node">
+                <div class="flow-node-title">Max-Graph Pooling</div>
+                <div class="flow-node-desc">Isolates localized vocoder glitches</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Augmentation -->
+      <div id="tab-aug" class="tab-pane">
+        <div class="card-glass">
+          <h3 class="card-title">Telephony Codec &amp; Acoustic Augmentation Pipeline</h3>
+          <p class="card-text">
+            Simulate realistic VoIP transmission degradation dynamically during training loop execution:
+          </p>
+          <div class="code-box">
+            <div class="code-box-header">
+              <span class="code-lang-label"><i data-lucide="code"></i> PyTorch Data Augmentation</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copy Snippet</button>
+            </div>
+            <pre><code><span class="code-keyword">import</span> torchaudio.transforms <span class="code-keyword">as</span> T
+
+<span class="code-keyword">class</span> <span class="code-type">AcousticDefenseAugmentor</span>:
+    <span class="code-keyword">def</span> <span class="code-func">__init__</span>(self):
+        self.freq_mask = T.FrequencyMasking(freq_mask_param=8)
+        self.time_mask = T.TimeMasking(time_mask_param=25)
+
+    <span class="code-keyword">def</span> <span class="code-func">apply_telephony_codec</span>(self, waveform):
+        <span class="code-comment"># Simulate 8kHz G.711 companding and VoIP packet jitter</span>
+        waveform_8k = torchaudio.functional.resample(waveform, 16000, 8000)
+        mulaw = torchaudio.functional.apply_codec(waveform_8k, 8000, <span class="code-string">"g711_alaw"</span>)
+        <span class="code-keyword">return</span> torchaudio.functional.resample(mulaw, 8000, 16000)</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Comprehensive Cybersecurity Architecture -->
+    <section class="section-block" id="cybersecurity-plan">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i data-lucide="shield-alert" class="section-title-icon"></i>
+          4. Cybersecurity Architecture & Defense Theory
+        </h2>
+        <span class="badge-pill badge-cyan">Defense in Depth</span>
+      </div>
+
+      <div class="grid-2">
+        <div class="card-glass">
+          <h3 class="card-title">Threat Matrix: Adversarial Audio Perturbations</h3>
+          <p class="card-text">
+            An attacker adds imperceptible noise &epsilon; to a synthesized audio clip to intentionally trick the neural classifier:
+          </p>
+          <div class="math-card">
+            x_{\text{adv}} = x + \epsilon \cdot \text{sign}\left(\nabla_x J(\theta, x, y)\right)
+          </div>
+          <p class="card-text">
+            <strong>True Tone Mitigation:</strong> 
+            Dynamic Speech Peak AGC destroys subtle low-amplitude perturbation scales, while multi-frame hysteresis requires sustained synthetic phoneme classification across consecutive frames before dropping calls.
+          </p>
+        </div>
+
+        <div class="card-glass">
+          <h3 class="card-title">STIR/SHAKEN Telephony Call Authentication</h3>
+          <p class="card-text">
+            Attackers spoof SIP caller ID headers to impersonate banks or executive lines. STIR/SHAKEN cryptographically signs SIP <code>INVITE</code> requests using an asymmetric digital signature in the <code>Identity</code> header (PASSPorT):
+          </p>
+          <ul class="task-list">
+            <li class="task-item"><i data-lucide="check"></i> Attestation A: Carrier authenticated customer and telephone number.</li>
+            <li class="task-item"><i data-lucide="alert-triangle"></i> Attestation B: Customer verified, but caller ID provenance unconfirmed.</li>
+            <li class="task-item"><i data-lucide="x"></i> Attestation C: Gateway entry with zero caller verification (flag for high scrutiny).</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Linux Kernel eBPF / XDP -->
+      <div class="card-glass" style="margin-top: 24px;">
+        <h3 class="card-title">
+          <i data-lucide="cpu" style="color: var(--cyan-neon);"></i>
+          Linux Kernel eBPF / XDP Automated Packet Drop Architecture
+        </h3>
+        <p class="card-text">
+          Traditional web firewalls drop connections after the TCP 3-way handshake in user space. eBPF with XDP drops packets directly at the network interface card (NIC) driver layer, handling millions of malicious VoIP UDP packets per second with zero CPU overhead:
+        </p>
+
+        <div class="code-box">
+          <div class="code-box-header">
+            <span class="code-lang-label"><i data-lucide="terminal"></i> C Kernel Program (xdp_firewall.c)</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy C Code</button>
+          </div>
+          <pre><code><span class="code-keyword">#include</span> &lt;linux/bpf.h&gt;
+<span class="code-keyword">#include</span> &lt;linux/ip.h&gt;
+
+<span class="code-keyword">struct</span> {
+    __uint(type, BPF_MAP_TYPE_HASH);
+    __type(key, __u32);   <span class="code-comment">// Malicious IPv4 Address</span>
+    __type(value, __u64); <span class="code-comment">// Expiration timestamp</span>
+    __uint(max_entries, 100000);
+} blocked_ips_map SEC(<span class="code-string">".maps"</span>);
+
+SEC(<span class="code-string">"xdp"</span>)
+<span class="code-type">int</span> <span class="code-func">xdp_drop_deepfake_callers</span>(<span class="code-keyword">struct</span> xdp_md *ctx) {
+    <span class="code-type">void</span> *data = (<span class="code-type">void</span> *)(<span class="code-type">long</span>)ctx-&gt;data;
+    <span class="code-type">void</span> *data_end = (<span class="code-type">void</span> *)(<span class="code-type">long</span>)ctx-&gt;data_end;
+    
+    <span class="code-keyword">struct</span> iphdr *ip = data + <span class="code-keyword">sizeof</span>(<span class="code-keyword">struct</span> ethhdr);
+    <span class="code-keyword">if</span> ((<span class="code-type">void</span> *)(ip + 1) &gt; data_end) <span class="code-keyword">return</span> XDP_PASS;
+
+    __u32 src_ip = ip-&gt;saddr;
+    __u64 *expiry = bpf_map_lookup_elem(&amp;blocked_ips_map, &amp;src_ip);
+    <span class="code-keyword">if</span> (expiry) {
+        <span class="code-keyword">return</span> XDP_DROP; <span class="code-comment">// Packet dropped at NIC driver layer</span>
+    }
+    <span class="code-keyword">return</span> XDP_PASS;
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Blockchain Consortium Architecture -->
+    <section class="section-block" id="blockchain-plan">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i data-lucide="blocks" class="section-title-icon"></i>
+          5. Blockchain Consortium Implementation &amp; Theory
+        </h2>
+        <span class="badge-pill badge-cyan">Web3 Forensic Ledger</span>
+      </div>
+
+      <div class="grid-2">
+        <div class="card-glass">
+          <h3 class="card-title">1. The Isolated Defense Problem</h3>
+          <p class="card-text">
+            When an attacker launches a coordinated synthetic voice attack across multiple financial institutions, each enterprise operates in a silo. A decentralized consortium enables immediate, peer-to-peer threat intelligence synchronization without central authority vulnerabilities.
+          </p>
+        </div>
+        <div class="card-glass">
+          <h3 class="card-title">2. Evidentiary Integrity &amp; Chain of Custody</h3>
+          <p class="card-text">
+            In financial wire fraud litigation, attackers often challenge log authenticity. Blockchain commitments provide mathematically provable timestamps and SHA-256 state hashes that satisfy strict courtroom chain-of-custody standards.
+          </p>
+        </div>
+      </div>
+
+      <!-- Solidity Smart Contract -->
+      <div class="card-glass" style="margin-top: 24px;">
+        <h3 class="card-title">
+          <i data-lucide="file-code" style="color: var(--purple-neon);"></i>
+          Production Solidity Contract: ThreatIntelRegistry.sol
+        </h3>
+        <div class="code-box">
+          <div class="code-box-header">
+            <span class="code-lang-label"><i data-lucide="code"></i> Solidity ^0.8.20</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy Contract</button>
+          </div>
+          <pre><code><span class="code-comment">// SPDX-License-Identifier: MIT</span>
+<span class="code-keyword">pragma solidity</span> ^0.8.20;
+
+<span class="code-keyword">contract</span> <span class="code-type">ThreatIntelRegistry</span> {
+    <span class="code-keyword">struct</span> <span class="code-type">ThreatRecord</span> {
+        <span class="code-type">bytes32</span> acousticHash;    <span class="code-comment">// Keccak-256 hash of audio frame</span>
+        <span class="code-type">uint32</span> spoofProbability; <span class="code-comment">// e.g. 9850 = 98.50%</span>
+        <span class="code-type">uint64</span> timestamp;
+        <span class="code-type">uint64</span> banDuration;
+        <span class="code-type">address</span> reporter;
+        <span class="code-type">bool</span> isActive;
+    }
+
+    <span class="code-keyword">mapping</span>(<span class="code-type">uint32</span> =&gt; <span class="code-type">ThreatRecord</span>) <span class="code-keyword">public</span> ipQuarantineRegistry;
+    <span class="code-keyword">mapping</span>(<span class="code-type">address</span> =&gt; <span class="code-type">bool</span>) <span class="code-keyword">public</span> authorizedNodes;
+
+    <span class="code-keyword">event</span> <span class="code-func">ThreatQuarantined</span>(<span class="code-type">uint32</span> <span class="code-keyword">indexed</span> ip, <span class="code-type">bytes32</span> acousticHash, <span class="code-type">uint32</span> score);
+
+    <span class="code-keyword">function</span> <span class="code-func">reportAndQuarantineThreat</span>(
+        <span class="code-type">uint32</span> ip,
+        <span class="code-type">bytes32</span> acousticHash,
+        <span class="code-type">uint32</span> score,
+        <span class="code-type">uint64</span> duration
+    ) <span class="code-keyword">external</span> {
+        <span class="code-keyword">require</span>(authorizedNodes[msg.sender], <span class="code-string">"Unauthorized node"</span>);
+        <span class="code-keyword">require</span>(score &gt;= 5000, <span class="code-string">"Score too low for ban"</span>);
+
+        ipQuarantineRegistry[ip] = <span class="code-type">ThreatRecord</span>(
+            acousticHash, score, <span class="code-type">uint64</span>(block.timestamp), duration, msg.sender, <span class="code-keyword">true</span>
+        );
+        <span class="code-keyword">emit</span> <span class="code-func">ThreatQuarantined</span>(ip, acousticHash, score);
+    }
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Off-Chain Merkle Batch Rollup -->
+      <div class="card-glass" style="margin-top: 24px;">
+        <h3 class="card-title">
+          <i data-lucide="git-merge" style="color: var(--emerald-neon);"></i>
+          Off-Chain Merkle Tree Rollup Architecture
+        </h3>
+        <p class="card-text">
+          To handle high call volumes (thousands of calls per second), True Tone does not write individual call checks to the blockchain. Instead, an off-chain accumulator constructs a Merkle tree of batch size $N=1024$ and publishes only the 32-byte <code>merkleRoot</code> to Ethereum L2 / Polygon CDK:
+        </p>
+
+        <div class="diagram-container">
+          <div class="flow-row">
+            <div class="flow-node">
+              <div class="flow-node-title">Incident 1...1024</div>
+              <div class="flow-node-desc">Off-chain acoustic logs</div>
+            </div>
+            <div class="flow-arrow">&rarr;</div>
+            <div class="flow-node">
+              <div class="flow-node-title">Keccak-256 Leaves</div>
+              <div class="flow-node-desc">hash(IP + Timestamp + Score)</div>
+            </div>
+            <div class="flow-arrow">&rarr;</div>
+            <div class="flow-node">
+              <div class="flow-node-title">Merkle Root</div>
+              <div class="flow-node-desc">Single 32-byte hash</div>
+            </div>
+            <div class="flow-arrow">&rarr;</div>
+            <div class="flow-node">
+              <div class="flow-node-title">Smart Contract Commit</div>
+              <div class="flow-node-desc">Gas cost: ~$0.0001 per batch</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Actionable Next Steps -->
+    <section class="section-block" id="decisions-matrix">
+      <div class="section-header">
+        <h2 class="section-title">
+          <i data-lucide="check-square" class="section-title-icon"></i>
+          6. Actionable Next Steps &amp; Priority Matrix
+        </h2>
+      </div>
+
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Priority</th>
+            <th>Domain</th>
+            <th>Deliverable</th>
+            <th>Impact</th>
+            <th>Target Window</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge-pill-sm" style="background: rgba(244, 63, 94, 0.2); color: var(--rose-neon);">P0</span></td>
+            <td>Acoustic ML</td>
+            <td>Cross-dataset stress test on WaveFake partitions</td>
+            <td>Validates model against unseen neural vocoders</td>
+            <td>Days 1 – 5</td>
+          </tr>
+          <tr>
+            <td><span class="badge-pill-sm" style="background: rgba(0, 242, 254, 0.2); color: var(--cyan-neon);">P1</span></td>
+            <td>Cybersecurity</td>
+            <td>HMAC-SHA256 chained audit logs in SQLite</td>
+            <td>Prevents forensic tampering of incident database</td>
+            <td>Days 6 – 10</td>
+          </tr>
+          <tr>
+            <td><span class="badge-pill-sm" style="background: rgba(139, 92, 246, 0.2); color: var(--purple-neon);">P2</span></td>
+            <td>Acoustic ML</td>
+            <td>SincNet raw waveform filterbank integration</td>
+            <td>Removes fixed spectrogram hyperparameter tuning</td>
+            <td>Days 16 – 25</td>
+          </tr>
+          <tr>
+            <td><span class="badge-pill-sm" style="background: rgba(16, 185, 129, 0.2); color: var(--emerald-neon);">P3</span></td>
+            <td>Web3 Ledger</td>
+            <td>Deploy ThreatIntelRegistry on local Anvil/Hardhat network</td>
+            <td>Enables multi-institution threat sharing</td>
+            <td>Days 51 – 60</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // Initialize Lucide icons
+  lucide.createIcons();
+
+  // Tab switching
+  function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // Copy code helper
+  function copyCode(btn) {
+    const pre = btn.closest('.code-box').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      const originalText = btn.innerText;
+      btn.innerText = 'Copied!';
+      btn.style.color = '#10b981';
+      setTimeout(() => {
+        btn.innerText = originalText;
+        btn.style.color = '';
+      }, 2000);
+    });
+  }
+
+  // Scrollspy navigation
+  window.addEventListener('scroll', () => {
+    const sections = document.querySelectorAll('section[id], header[id]');
+    const scrollY = window.pageYOffset;
+
+    sections.forEach(current => {
+      const sectionHeight = current.offsetHeight;
+      const sectionTop = current.offsetTop - 100;
+      const sectionId = current.getAttribute('id');
+      const navLink = document.querySelector(`.nav-menu a[href*="${sectionId}"]`);
+
+      if (navLink && scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+        document.querySelectorAll('.nav-menu a').forEach(el => el.classList.remove('active'));
+        navLink.classList.add('active');
+      }
+    });
+  });
+</script>
+</body>
+</html>

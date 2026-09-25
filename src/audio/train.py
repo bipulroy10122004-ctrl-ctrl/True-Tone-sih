@@ -63,9 +63,16 @@ def train(args):
     dev_ds = CachedAudioDataset(args.dev_cache)
     print(f"Loaded {len(train_ds):,} training samples, {len(dev_ds):,} dev samples.", flush=True)
 
+    if device.type == "cpu":
+        num_threads = min(8, os.cpu_count() or 4)
+        torch.set_num_threads(num_threads)
+        print(f"PyTorch CPU compute threads configured: {num_threads}", flush=True)
+
     # In Windows, num_workers=0 avoids pagefile IPC bottlenecks
-    train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, pin_memory=True)
-    dev_loader = DataLoader(dev_ds, batch_size=args.batch_size * 2, shuffle=False, pin_memory=True)
+    use_pin_memory = device.type == "cuda"
+    train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, pin_memory=use_pin_memory)
+    dev_loader = DataLoader(dev_ds, batch_size=args.batch_size * 2, shuffle=False, pin_memory=use_pin_memory)
+
 
     # 2. Instantiate Model & Optimizer
     model = AudioSpoofDetector(input_dim=60, hidden_dim=128).to(device)

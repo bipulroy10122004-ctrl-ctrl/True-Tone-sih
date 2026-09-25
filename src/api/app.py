@@ -73,6 +73,20 @@ class SimulateCallRequest(BaseModel):
 async def serve_dashboard(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
+@app.get("/roadmap", response_class=FileResponse)
+async def serve_roadmap():
+    roadmap_path = os.path.join(PROJECT_ROOT, "TRUE_TONE_ROADMAP.html")
+    if os.path.exists(roadmap_path):
+        return FileResponse(roadmap_path)
+    raise HTTPException(status_code=404, detail="Roadmap file not found")
+
+@app.get("/documentation", response_class=FileResponse)
+async def serve_documentation():
+    doc_path = os.path.join(PROJECT_ROOT, "DOCUMENTATION.html")
+    if os.path.exists(doc_path):
+        return FileResponse(doc_path)
+    raise HTTPException(status_code=404, detail="Documentation file not found")
+
 # --- Audio Sample Serving ---
 
 @app.get("/api/samples")

@@ -12,9 +12,12 @@ htmlcov/
 *.sqlite
 *.sqlite3
 models/*.db
+models/backup_*.pt
+models/wavefake_only_model.pt
 
 # Datasets and large binary downloads (>100MB violates GitHub limits)
 data/my_dataset/
+data/in_the_wild/
 data/custom_cached_features/
 data/wavefake_samples/*.parquet
 data/wavefake_samples/generated/
