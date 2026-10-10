@@ -1,0 +1,61 @@
+<!-- Manual IP Quarantine Modal -->
+<div class="modal-overlay" id="manualBlockModal">
+  <div class="modal-box">
+    <h3 style="margin-bottom: 1rem; font-size: 1.15rem; color: #fff;">Quarantine IP at Firewall</h3>
+    <div class="input-group">
+      <label class="input-label" for="manualIpInput">Target IP Address:</label>
+      <input type="text" id="manualIpInput" class="input-control" placeholder="e.g. 192.0.2.14">
+    </div>
+    <div class="input-group">
+      <label class="input-label" for="manualReasonInput">Quarantine Reason:</label>
+      <input type="text" id="manualReasonInput" class="input-control" value="Manual Security Quarantine">
+    </div>
+    <div class="input-group">
+      <label class="input-label" for="manualTtlInput">Duration (seconds):</label>
+      <input type="number" id="manualTtlInput" class="input-control" value="3600">
+    </div>
+    <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+      <button class="btn-block-action" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);" onclick="closeManualBlockModal()">Cancel</button>
+      <button class="btn-block-action" onclick="submitManualBlock()">Enforce Ban</button>
+    </div>
+  </div>
+</div>
+
+<!-- Quick IP Unblock Modal -->
+<div class="modal-overlay" id="quickUnblockModal">
+  <div class="modal-box">
+    <h3 style="margin-bottom: 1rem; font-size: 1.15rem; color: #fff;">🔓 Restore / Unblock IP Address</h3>
+    <div class="input-group">
+      <label class="input-label" for="quickUnblockIpInput">Target IP Address to Unblock:</label>
+      <input type="text" id="quickUnblockIpInput" class="input-control" placeholder="e.g. 198.51.100.110">
+    </div>
+    <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+      <button class="btn-block-action" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);" onclick="closeQuickUnblockModal()">Cancel</button>
+      <button class="btn-unblock" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;" onclick="submitQuickUnblock()">Confirm Unblock</button>
+    </div>
+  </div>
+</div>
+
+<!-- Missing Tab Audio Helper Modal -->
+<div class="modal-overlay" id="tabAudioHelpModal">
+  <div class="modal-box" style="max-width: 520px;">
+    <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;">
+      <span style="font-size: 1.5rem;">🔊</span>
+      <h3 style="font-size: 1.15rem; color: #fff; margin: 0;">Audio Track Required to Tap In-Call Audio</h3>
+    </div>
+    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+      The browser sharing dialog was closed without sharing audio. To capture the voice of the caller on the other side of your call, audio sharing must be enabled:
+    </p>
+    <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.825rem; color: #e2e8f0;">
+      <p style="margin: 0 0 0.5rem 0;"><strong>1. For Web Calls (WhatsApp Web, Google Meet, Zoom Web):</strong><br>Select the <strong style="color:#fff;">Chrome Tab</strong> tab and check <strong style="color:var(--accent-emerald);">"Also share tab audio"</strong> at the bottom.</p>
+      <p style="margin: 0;"><strong>2. For Desktop Apps (WhatsApp Desktop, Teams, Zoom App):</strong><br>Select <strong style="color:#fff;">Entire Screen</strong> and check <strong style="color:var(--accent-emerald);">"Share system audio"</strong> at the bottom left.</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+      <button class="btn-block-action" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);" onclick="closeTabAudioHelpModal()">Dismiss</button>
+      <button class="btn-unblock" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;" onclick="retryTabAudioCapture()">🔁 Try Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Toast Notifications Container -->
+<div id="toastContainer" style="position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 9999; pointer-events: none;"></div>

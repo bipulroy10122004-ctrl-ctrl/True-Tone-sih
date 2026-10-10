@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>True Tone SIH | Technical Flow Architecture & System Outputs</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: auto;
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Top Navigation Bar */
+    header.top-nav {
+      background: #ffffff;
+      border-bottom: 2px solid #000000;
+      padding: 12px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: #000000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+    }
+
+    .brand-subtitle {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #64748b;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .nav-btn-secondary {
+      background: #ffffff;
+      color: #000000;
+      border: 1.5px solid #000000;
+    }
+
+    .nav-btn-secondary:hover {
+      background: #000000;
+      color: #ffffff;
+    }
+
+    .nav-btn-primary {
+      background: #000000;
+      color: #ffffff;
+      border: 1.5px solid #000000;
+    }
+
+    .nav-btn-primary:hover {
+      background: #334155;
+    }
+
+    /* Canvas Container */
+    main.diagram-viewport {
+      flex: 1;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 1440px;
+      gap: 32px;
+    }
+
+    .diagram-card {
+      background: #ffffff;
+      border: 2.5px solid #000000;
+      border-radius: 8px;
+      padding: 36px 40px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 1720px;
+      position: relative;
+    }
+
+    /* Diagram Internal Header */
+    .flow-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #000000;
+    }
+
+    .flow-title-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .flow-logo-glyph {
+      width: 44px;
+      height: 44px;
+      border: 3px solid #000000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .flow-logo-glyph::after {
+      content: '';
+      width: 18px;
+      height: 18px;
+      background: #000000;
+      border-radius: 50%;
+    }
+
+    .flow-title h1 {
+      font-size: 1.45rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .flow-title p {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #334155;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .flow-badge {
+      background: #000000;
+      color: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 18px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* SVG Diagram Styling */
+    svg.technical-flow-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Output Section Highlight */
+    .output-node {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .output-node:hover rect {
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+      stroke-width: 3;
+    }
+
+    /* Flow Footer */
+    .flow-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 2px solid #000000;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #475569;
+    }
+
+    /* ── Live Outputs & JSON Payloads Section ── */
+    .outputs-container {
+      background: #ffffff;
+      border: 2.5px solid #000000;
+      border-radius: 8px;
+      padding: 30px 40px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 1720px;
+    }
+
+    .outputs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #000000;
+    }
+
+    .outputs-header h2 {
+      font-size: 1.25rem;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .output-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .output-tab-btn {
+      padding: 8px 16px;
+      border: 1.5px solid #000000;
+      background: #f8fafc;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .output-tab-btn.active {
+      background: #000000;
+      color: #ffffff;
+    }
+
+    .output-tab-btn:hover:not(.active) {
+      background: #e2e8f0;
+    }
+
+    .output-display-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .output-panel {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 8px;
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      border: 1.5px solid #000000;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    .output-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #334155;
+      color: #94a3b8;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .output-meta-card {
+      background: #f8fafc;
+      border: 1.5px solid #000000;
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .output-meta-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .output-badge-status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .badge-spoof { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+    .badge-bonafide { background: #dcfce7; color: #166534; border: 1px solid #4ade80; }
+    .badge-edge { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .badge-idle { background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; }
+
+    .action-steps-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+
+    .action-steps-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.5;
+    }
+
+    /* Zoom / Action Bar */
+    .controls-bar {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #ffffff;
+      border: 2px solid #000000;
+      border-radius: 8px;
+      padding: 6px;
+      display: flex;
+      gap: 6px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      z-index: 100;
+    }
+
+    .control-btn {
+      width: 36px;
+      height: 36px;
+      background: #ffffff;
+      border: 1.5px solid #000000;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.15s ease;
+    }
+
+    .control-btn:hover {
+      background: #000000;
+      color: #ffffff;
+    }
+
+    @media print {
+      body { background: #ffffff; }
+      header.top-nav, .controls-bar, .outputs-container { display: none; }
+      .diagram-card { border: none; box-shadow: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Navigation -->
+  <header class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-icon">
+        <i data-lucide="shield-alert" style="width: 20px; height: 20px;"></i>
+      </div>
+      <div>
+        <div class="brand-title">TRUE TONE SIH</div>
+        <div class="brand-subtitle">Smart India Hackathon • Real-Time AI Audio Defense</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="/" class="nav-btn nav-btn-secondary">
+        <i data-lucide="layout-dashboard" style="width: 15px; height: 15px;"></i> Command Center
+      </a>
+      <a href="/documentation" class="nav-btn nav-btn-secondary">
+        <i data-lucide="book-open" style="width: 15px; height: 15px;"></i> Documentation
+      </a>
+      <a href="/roadmap" class="nav-btn nav-btn-secondary">
+        <i data-lucide="git-branch" style="width: 15px; height: 15px;"></i> Architecture Roadmap
+      </a>
+      <button onclick="window.print()" class="nav-btn nav-btn-primary">
+        <i data-lucide="printer" style="width: 15px; height: 15px;"></i> Print / Export PDF
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Viewport -->
+  <main class="diagram-viewport">
+    <div class="diagram-card">
+
+      <!-- Header Section -->
+      <div class="flow-header">
+        <div class="flow-title-group">
+          <div class="flow-logo-glyph"></div>
+          <div class="flow-title">
+            <h1>TRUE TONE SIH</h1>
+            <p>Real-Time AI Voice Anti-Spoofing &amp; Automated IP Firewall Defense System • System Outputs</p>
+          </div>
+        </div>
+        <div class="flow-badge">
+          <i data-lucide="activity" style="width: 14px; height: 14px;"></i> TECHNICAL FLOW WITH SYSTEM OUTPUTS
+        </div>
+      </div>
+
+      <!-- Vector Technical Blueprint SVG -->
+      <svg class="technical-flow-svg" viewBox="0 0 1700 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Markers for arrows -->
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="#000000"/>
+          </marker>
+          <marker id="arrow-dashed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="#b91c1c"/>
+          </marker>
+          <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="#047857"/>
+          </marker>
+        </defs>
+
+        <!-- ============================================================== -->
+        <!-- 1. LEFT INGESTION SOURCES (3 BLACK PILLS)                       -->
+        <!-- ============================================================== -->
+
+        <!-- Ingestion Pill 1: VOIP & WEBRTC -->
+        <rect x="20" y="240" width="130" height="42" rx="21" fill="#000000"/>
+        <text x="85" y="266" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle" letter-spacing="0.04em">VOIP &amp; WEBRTC</text>
+
+        <!-- Ingestion Pill 2: REST API / KYCS -->
+        <rect x="20" y="440" width="130" height="42" rx="21" fill="#000000"/>
+        <text x="85" y="466" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle" letter-spacing="0.04em">REST API / KYCS</text>
+
+        <!-- Ingestion Pill 3: TELEPHONY / GSM -->
+        <rect x="20" y="640" width="130" height="42" rx="21" fill="#000000"/>
+        <text x="85" y="666" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle" letter-spacing="0.04em">TELEPHONY / GSM</text>
+
+        <!-- Connector Curves to Central Ingestion Node -->
+        <path d="M 150 261 C 180 261, 185 461, 215 461" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+        <path d="M 150 461 L 215 461" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+        <path d="M 150 661 C 180 661, 185 461, 215 461" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- ============================================================== -->
+        <!-- 2. CENTRAL ACQUISITION NODE                                    -->
+        <!-- ============================================================== -->
+        <rect x="220" y="432" width="150" height="58" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+        <circle cx="244" cy="461" r="7" stroke="#000000" stroke-width="2" fill="none"/>
+        <line x1="244" y1="468" x2="244" y2="475" stroke="#000000" stroke-width="2"/>
+        <text x="260" y="456" fill="#000000" font-size="11.5" font-weight="900" letter-spacing="0.02em">INGEST AUDIO</text>
+        <text x="260" y="472" fill="#475569" font-size="9" font-weight="700">&amp; EXTRACT CLIENT IP</text>
+
+        <!-- Fan-out Paths from Central Node to the 3 Tiers -->
+        <path d="M 370 461 C 400 461, 410 160, 445 160" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+        <path d="M 370 461 L 445 461" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+        <path d="M 370 461 C 400 461, 410 760, 445 760" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- ============================================================== -->
+        <!-- 3. TIER 1: EDGE SECURITY & IP FIREWALL LAYER (TOP)             -->
+        <!-- ============================================================== -->
+
+        <!-- Decision Diamond: IP IN BLOCKLIST? -->
+        <g transform="translate(450, 160)">
+          <polygon points="0,-48 55,0 0,48 -55,0" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+          <text x="0" y="-8" fill="#000000" font-size="8.5" font-weight="800" text-anchor="middle">CALLER IP</text>
+          <text x="0" y="4" fill="#000000" font-size="8.5" font-weight="800" text-anchor="middle">CURRENTLY</text>
+          <text x="0" y="16" fill="#000000" font-size="8.5" font-weight="800" text-anchor="middle">BLOCKED?</text>
+        </g>
+
+        <!-- Label NO (Proceed to Middleware Engine) -->
+        <text x="518" y="152" fill="#000000" font-size="9" font-weight="800">NO</text>
+        <path d="M 505 160 L 565 160" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Label YES (Drop connection immediately) -->
+        <text x="458" y="222" fill="#000000" font-size="9" font-weight="800">YES</text>
+        <path d="M 450 208 L 450 255" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Node: INTERCEPT AT EDGE -->
+        <rect x="365" y="255" width="165" height="44" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="447" y="274" fill="#000000" font-size="9.5" font-weight="800" text-anchor="middle">INTERCEPT AT EDGE</text>
+        <text x="447" y="288" fill="#64748b" font-size="8" font-weight="700" text-anchor="middle">O(1) MEMORY SET LOOKUP</text>
+
+        <!-- Downward to Database: ADD BLOCKED AUDIT -->
+        <path d="M 447 299 L 447 335" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Cylinder Database 1: ADD BLOCKED AUDIT -->
+        <g transform="translate(432, 335)">
+          <ellipse cx="15" cy="8" rx="15" ry="6" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <path d="M 0 8 L 0 24 A 15 6 0 0 0 30 24 L 30 8" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <path d="M 0 16 A 15 6 0 0 0 30 16" fill="none" stroke="#000000" stroke-width="2"/>
+          <text x="15" y="40" fill="#000000" font-size="8" font-weight="800" text-anchor="middle">LOG BAN AUDIT</text>
+        </g>
+
+        <!-- Line from DB to Explicit Output Box -->
+        <path d="M 530 277 L 575 277" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- ★ EXPLICIT OUTPUT NODE 1: 403 FORBIDDEN TERMINATION ★ -->
+        <g class="output-node" onclick="showOutputTab('edge')">
+          <rect x="575" y="250" width="180" height="54" rx="8" fill="#000000" stroke="#000000" stroke-width="2"/>
+          <rect x="585" y="257" width="60" height="15" rx="3" fill="#ef4444"/>
+          <text x="615" y="268" fill="#ffffff" font-size="8" font-weight="900" text-anchor="middle">OUTPUT</text>
+          <text x="652" y="268" fill="#ffffff" font-size="8.5" font-weight="800">403 FORBIDDEN</text>
+          <text x="665" y="285" fill="#fca5a5" font-size="8" font-weight="700" text-anchor="middle">CONNECTION TERMINATED</text>
+          <text x="665" y="296" fill="#ffffff" font-size="7" font-weight="500" text-anchor="middle">Zero CPU inference • IP quarantined</text>
+        </g>
+
+        <!-- Engine Node: IP FIREWALL ENGINE -->
+        <rect x="565" y="138" width="145" height="44" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+        <text x="637" y="157" fill="#000000" font-size="10.5" font-weight="900" text-anchor="middle">FIREWALL ENGINE</text>
+        <text x="637" y="171" fill="#475569" font-size="8" font-weight="700" text-anchor="middle">SECURITY MIDDLEWARE</text>
+
+        <!-- Database Read to Engine: FETCH ACTIVE BLOCKLIST -->
+        <g transform="translate(622, 70)">
+          <ellipse cx="15" cy="8" rx="15" ry="6" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <path d="M 0 8 L 0 24 A 15 6 0 0 0 30 24 L 30 8" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <path d="M 0 16 A 15 6 0 0 0 30 16" fill="none" stroke="#000000" stroke-width="2"/>
+          <text x="15" y="-4" fill="#000000" font-size="8" font-weight="800" text-anchor="middle">FETCH BLOCKLIST</text>
+          <text x="15" y="-14" fill="#64748b" font-size="7" font-weight="700" text-anchor="middle">SQLITE ACID</text>
+        </g>
+        <path d="M 637 100 L 637 138" stroke="#000000" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Fan-out from Firewall Engine to Feature Pills -->
+        <path d="M 710 160 C 735 160, 740 75, 765 75" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 710 160 C 735 160, 740 130, 765 130" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 710 160 C 735 160, 740 185, 765 185" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 710 160 C 735 160, 740 240, 765 240" stroke="#000000" stroke-width="2" fill="none"/>
+
+        <!-- Feature Pill 1: WHITELIST FILTER -->
+        <rect x="765" y="55" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="78" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">WHITELIST VALIDATOR</text>
+
+        <!-- Feature Pill 2: RATE LIMITING & THREAT SCORE -->
+        <rect x="765" y="110" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="133" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">IP ATTACK FREQUENCY</text>
+
+        <!-- Feature Pill 3: LEASE EXPIRATION AUDITOR -->
+        <rect x="765" y="165" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="188" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">EXPIRATION AUDITOR</text>
+
+        <!-- Feature Pill 4: REPUTATION SCORE DECAY -->
+        <rect x="765" y="220" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="243" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">SUSPICION SCORE DECAY</text>
+
+        <!-- Converge into Action Diamond: SUSPICION SCORE -->
+        <path d="M 930 75 C 950 75, 960 160, 975 160" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 930 130 C 950 130, 960 160, 975 160" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 930 185 C 950 185, 960 160, 975 160" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 930 240 C 950 240, 960 160, 975 160" stroke="#000000" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Decision Diamond: REPUTATION LEVEL -->
+        <g transform="translate(1015, 160)">
+          <polygon points="0,-40 45,0 0,40 -45,0" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+          <text x="0" y="-5" fill="#000000" font-size="8" font-weight="800" text-anchor="middle">THREAT</text>
+          <text x="0" y="8" fill="#000000" font-size="8" font-weight="800" text-anchor="middle">SCORE &gt; 0.8?</text>
+        </g>
+
+        <!-- Diamond outputs -->
+        <text x="1068" y="152" fill="#000000" font-size="8.5" font-weight="800">YES</text>
+        <path d="M 1060 160 L 1105 160" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+        <!-- Black Box: ELEVATE SURVEILLANCE -->
+        <rect x="1105" y="138" width="145" height="44" rx="6" fill="#000000"/>
+        <text x="1177" y="157" fill="#ffffff" font-size="9" font-weight="800" text-anchor="middle">OUTPUT: QUARANTINE</text>
+        <text x="1177" y="171" fill="#ef4444" font-size="8" font-weight="800" text-anchor="middle">IP BAN ENFORCED</text>
+
+        <!-- No: Standard routing -->
+        <text x="1015" y="215" fill="#000000" font-size="8.5" font-weight="800" text-anchor="middle">NO</text>
+        <path d="M 1015 200 C 1015 225, 1065 225, 1105 225" stroke="#000000" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <rect x="1105" y="205" width="145" height="40" rx="6" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="1177" y="222" fill="#000000" font-size="8.5" font-weight="800" text-anchor="middle">OUTPUT: ADMITTED</text>
+        <text x="1177" y="235" fill="#10b981" font-size="7.5" font-weight="700" text-anchor="middle">NORMAL ADMISSION</text>
+
+        <!-- ============================================================== -->
+        <!-- 4. TIER 2: ACOUSTIC VAD & SIGNAL PROCESSING (MIDDLE)           -->
+        <!-- ============================================================== -->
+
+        <!-- Decision Diamond: SPEECH ACTIVE (VAD)? -->
+        <g transform="translate(450, 461)">
+          <polygon points="0,-48 55,0 0,48 -55,0" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+          <text x="0" y="-8" fill="#000000" font-size="8.5" font-weight="800" text-anchor="middle">VOCAL SPEECH</text>
+          <text x="0" y="4" fill="#000000" font-size="8.5" font-weight="800" text-anchor="middle">DETECTED?</text>
+          <text x="0" y="16" fill="#64748b" font-size="7.5" font-weight="700" text-anchor="middle">(VAD TEST)</text>
+        </g>
+
+        <!-- NO (Ambient Silence) -->
+        <text x="458" y="525" fill="#000000" font-size="9" font-weight="800">NO</text>
+        <path d="M 450 509 L 450 545" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Node: BYPASS INFERENCE (0.54ms) -->
+        <rect x="365" y="545" width="165" height="44" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="447" y="564" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">BYPASS INFERENCE</text>
+        <text x="447" y="578" fill="#64748b" font-size="8" font-weight="700" text-anchor="middle">LATENCY: 0.54 MS</text>
+
+        <!-- Downward to Database: LOG SILENCE TELEMETRY -->
+        <path d="M 447 589 L 447 625" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Cylinder Database 2: LOG SILENCE -->
+        <g transform="translate(432, 625)">
+          <ellipse cx="15" cy="8" rx="15" ry="6" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <path d="M 0 8 L 0 24 A 15 6 0 0 0 30 24 L 30 8" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <path d="M 0 16 A 15 6 0 0 0 30 16" fill="none" stroke="#000000" stroke-width="2"/>
+          <text x="15" y="40" fill="#000000" font-size="8" font-weight="800" text-anchor="middle">LOG TELEMETRY</text>
+        </g>
+
+        <!-- Line from DB to Explicit Output Box -->
+        <path d="M 530 567 L 575 567" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- ★ EXPLICIT OUTPUT NODE 2: IDLE / AMBIENT SILENCE ★ -->
+        <g class="output-node" onclick="showOutputTab('idle')">
+          <rect x="575" y="540" width="180" height="54" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.2"/>
+          <rect x="585" y="547" width="55" height="15" rx="3" fill="#0284c7"/>
+          <text x="612" y="558" fill="#ffffff" font-size="8" font-weight="900" text-anchor="middle">OUTPUT</text>
+          <text x="647" y="558" fill="#000000" font-size="8.5" font-weight="800">AMBIENT SILENCE</text>
+          <text x="665" y="574" fill="#0284c7" font-size="8" font-weight="800" text-anchor="middle">STATUS: IDLE / KEEP-ALIVE</text>
+          <text x="665" y="586" fill="#64748b" font-size="7" font-weight="600" text-anchor="middle">is_silent=True • Decay Suspicion</text>
+        </g>
+
+        <!-- YES (Active Vocal Speech) -->
+        <text x="518" y="453" fill="#000000" font-size="9" font-weight="800">YES</text>
+        <path d="M 505 461 L 565 461" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Engine Node: SIGNAL & VAD ENGINE -->
+        <rect x="565" y="439" width="145" height="44" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+        <text x="637" y="458" fill="#000000" font-size="10" font-weight="900" text-anchor="middle">ACOUSTIC VAD ENGINE</text>
+        <text x="637" y="472" fill="#475569" font-size="8" font-weight="700" text-anchor="middle">RESAMPLE &amp; FORMANT</text>
+
+        <!-- Database Fetch to VAD: TELEPHONY CODEC WEIGHTS -->
+        <g transform="translate(622, 375)">
+          <ellipse cx="15" cy="8" rx="15" ry="6" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <path d="M 0 8 L 0 24 A 15 6 0 0 0 30 24 L 30 8" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <path d="M 0 16 A 15 6 0 0 0 30 16" fill="none" stroke="#000000" stroke-width="2"/>
+          <text x="15" y="-4" fill="#000000" font-size="8" font-weight="800" text-anchor="middle">AGC NORMALIZER</text>
+          <text x="15" y="-14" fill="#64748b" font-size="7" font-weight="700" text-anchor="middle">MAX GAIN 50X</text>
+        </g>
+        <path d="M 637 405 L 637 439" stroke="#000000" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Fan-out from VAD Engine to 5 Feature Processing Pills -->
+        <path d="M 710 461 C 735 461, 740 375, 765 375" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 710 461 C 735 461, 740 418, 765 418" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 710 461 L 765 461" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 710 461 C 735 461, 740 504, 765 504" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 710 461 C 735 461, 740 547, 765 547" stroke="#000000" stroke-width="2" fill="none"/>
+
+        <!-- VAD Pill 1: ENERGY FLOOR & RMS -->
+        <rect x="765" y="356" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="379" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">ENERGY &amp; RMS FLOOR</text>
+
+        <!-- VAD Pill 2: PITCH AUTOCORRELATION -->
+        <rect x="765" y="399" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="422" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">PITCH HARMONICS (70-500Hz)</text>
+
+        <!-- VAD Pill 3: VOCAL TRACT FORMANT FILTER -->
+        <rect x="765" y="442" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="465" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">FORMANT BAND (80-3800Hz)</text>
+
+        <!-- VAD Pill 4: SPECTRAL FLATNESS -->
+        <rect x="765" y="485" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="508" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">SPECTRAL FLATNESS &lt; 0.45</text>
+
+        <!-- VAD Pill 5: LFCC EXTRACTION -->
+        <rect x="765" y="528" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="551" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">LFCC TENSOR (400x60)</text>
+
+        <!-- Converge into Feature Tensor Box -->
+        <path d="M 930 375 C 950 375, 960 461, 985 461" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 930 418 C 950 418, 960 461, 985 461" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 930 461 L 985 461" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 930 504 C 950 504, 960 461, 985 461" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 930 547 C 950 547, 960 461, 985 461" stroke="#000000" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Node: SANITIZE & PAD TENSOR -->
+        <rect x="990" y="439" width="135" height="44" rx="6" fill="#ffffff" stroke="#000000" stroke-width="2.2"/>
+        <text x="1057" y="458" fill="#000000" font-size="9.5" font-weight="800" text-anchor="middle">CALIBRATE TENSOR</text>
+        <text x="1057" y="472" fill="#64748b" font-size="8" font-weight="700" text-anchor="middle">STATIC + Δ + ΔΔ (60D)</text>
+
+        <!-- Route into Tier 3 (Neural Inference Engine) -->
+        <path d="M 1125 461 C 1145 461, 1150 720, 565 760" stroke="#000000" stroke-width="2.2" stroke-dasharray="4,4" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- ============================================================== -->
+        <!-- 5. TIER 3: NEURAL DEEP LEARNING INFERENCE & MITIGATION (BOTTOM) -->
+        <!-- ============================================================== -->
+
+        <!-- Decision Diamond: VALID FORMAT? -->
+        <g transform="translate(450, 760)">
+          <polygon points="0,-48 55,0 0,48 -55,0" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+          <text x="0" y="-8" fill="#000000" font-size="8.5" font-weight="800" text-anchor="middle">CORRUPTED</text>
+          <text x="0" y="4" fill="#000000" font-size="8.5" font-weight="800" text-anchor="middle">OR ZERO</text>
+          <text x="0" y="16" fill="#000000" font-size="8.5" font-weight="800" text-anchor="middle">CHANNELS?</text>
+        </g>
+
+        <!-- YES (Malformed Audio) -->
+        <text x="458" y="825" fill="#000000" font-size="9" font-weight="800">YES</text>
+        <path d="M 450 808 L 450 845" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+        <rect x="365" y="845" width="165" height="44" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="447" y="864" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">ZERO PAD MISSING</text>
+        <text x="447" y="878" fill="#64748b" font-size="8" font-weight="700" text-anchor="middle">IMPUTE NAN / INF</text>
+
+        <!-- NO (Proceed to Neural Engine) -->
+        <text x="518" y="752" fill="#000000" font-size="9" font-weight="800">NO</text>
+        <path d="M 505 760 L 565 760" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Engine Node: NEURAL INFERENCE ENGINE -->
+        <rect x="565" y="738" width="145" height="44" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+        <text x="637" y="757" fill="#000000" font-size="10.5" font-weight="900" text-anchor="middle">NEURAL INFERENCE</text>
+        <text x="637" y="771" fill="#475569" font-size="8" font-weight="700" text-anchor="middle">CNN-BiLSTM-ATTENTION</text>
+
+        <!-- Database Fetch: BEST CHECKPOINT -->
+        <g transform="translate(622, 675)">
+          <ellipse cx="15" cy="8" rx="15" ry="6" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <path d="M 0 8 L 0 24 A 15 6 0 0 0 30 24 L 30 8" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <path d="M 0 16 A 15 6 0 0 0 30 16" fill="none" stroke="#000000" stroke-width="2"/>
+          <text x="15" y="-4" fill="#000000" font-size="8" font-weight="800" text-anchor="middle">MODEL WEIGHTS</text>
+          <text x="15" y="-14" fill="#64748b" font-size="7" font-weight="700" text-anchor="middle">24K MULTI-DATASET</text>
+        </g>
+        <path d="M 637 705 L 637 738" stroke="#000000" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Fan-out from Neural Engine to 4 Architecture Layers -->
+        <path d="M 710 760 C 735 760, 740 675, 765 675" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 710 760 C 735 760, 740 730, 765 730" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 710 760 C 735 760, 740 785, 765 785" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 710 760 C 735 760, 740 840, 765 840" stroke="#000000" stroke-width="2" fill="none"/>
+
+        <!-- Layer Pill 1: 1D CNN FRONT-END -->
+        <rect x="765" y="655" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="678" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">1D CNN (60→64→128ch)</text>
+
+        <!-- Layer Pill 2: 2-LAYER BIDIRECTIONAL LSTM -->
+        <rect x="765" y="710" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="733" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">BiLSTM (HIDDEN=128)</text>
+
+        <!-- Layer Pill 3: MULTI-HEAD SELF ATTENTION -->
+        <rect x="765" y="765" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="788" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">TEMPORAL SELF-ATTENTION</text>
+
+        <!-- Layer Pill 4: DENSE SIGMOID CLASSIFIER -->
+        <rect x="765" y="820" width="165" height="38" rx="19" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+        <text x="847" y="843" fill="#000000" font-size="9" font-weight="800" text-anchor="middle">SIGMOID HEAD P(SPOOF)</text>
+
+        <!-- Converge into Decision Diamond: PROBABILITY >= 0.50? -->
+        <path d="M 930 675 C 950 675, 960 760, 975 760" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 930 730 C 950 730, 960 760, 975 760" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 930 785 C 950 785, 960 760, 975 760" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 930 840 C 950 840, 960 760, 975 760" stroke="#000000" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- Decision Diamond: P >= 0.50? -->
+        <g transform="translate(1015, 760)">
+          <polygon points="0,-42 45,0 0,42 -45,0" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+          <text x="0" y="-8" fill="#000000" font-size="8" font-weight="800" text-anchor="middle">P(SPOOF)</text>
+          <text x="0" y="6" fill="#000000" font-size="8" font-weight="800" text-anchor="middle">≥ 0.5000?</text>
+        </g>
+
+        <!-- ★ EXPLICIT OUTPUT NODE 3: AUTHENTIC HUMAN (SAFE) ★ -->
+        <text x="1015" y="825" fill="#000000" font-size="8.5" font-weight="800" text-anchor="middle">NO</text>
+        <path d="M 1015 802 C 1015 845, 1060 845, 1095 845" stroke="#047857" stroke-width="2.2" fill="none" marker-end="url(#arrow-emerald)"/>
+        <g class="output-node" onclick="showOutputTab('bonafide')">
+          <rect x="1095" y="820" width="185" height="52" rx="8" fill="#ffffff" stroke="#047857" stroke-width="2.5"/>
+          <rect x="1105" y="827" width="55" height="15" rx="3" fill="#047857"/>
+          <text x="1132" y="838" fill="#ffffff" font-size="8" font-weight="900" text-anchor="middle">OUTPUT</text>
+          <text x="1165" y="838" fill="#047857" font-size="8.5" font-weight="800">AUTHENTIC HUMAN</text>
+          <text x="1187" y="853" fill="#065f46" font-size="8" font-weight="800" text-anchor="middle">STATUS: CALL_PERMITTED</text>
+          <text x="1187" y="865" fill="#64748b" font-size="7" font-weight="600" text-anchor="middle">p &lt; 0.20 • Biometric pass</text>
+        </g>
+
+        <!-- ★ EXPLICIT OUTPUT NODE 4: CONFIRMED AI SPOOF (ATTACK NEUTRALIZED) ★ -->
+        <text x="1068" y="752" fill="#000000" font-size="8.5" font-weight="800">YES</text>
+        <path d="M 1060 760 L 1095 760" stroke="#000000" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+        <g class="output-node" onclick="showOutputTab('spoof')">
+          <rect x="1095" y="734" width="185" height="54" rx="8" fill="#000000" stroke="#ef4444" stroke-width="2.5"/>
+          <rect x="1105" y="741" width="55" height="15" rx="3" fill="#ef4444"/>
+          <text x="1132" y="752" fill="#ffffff" font-size="8" font-weight="900" text-anchor="middle">OUTPUT</text>
+          <text x="1165" y="752" fill="#ffffff" font-size="8.5" font-weight="800">CONFIRMED SPOOF</text>
+          <text x="1187" y="768" fill="#f87171" font-size="8" font-weight="800" text-anchor="middle">ATTACK INTERCEPTED</text>
+          <text x="1187" y="780" fill="#ffffff" font-size="7" font-weight="500" text-anchor="middle">p ≥ 0.98 • Auto-Quarantine Triggered</text>
+        </g>
+
+        <!-- Automated Feedback Loop (Dashed Red Line back to Firewall Engine!) -->
+        <path d="M 1280 760 C 1305 760, 1315 100, 710 160" stroke="#b91c1c" stroke-width="2.5" stroke-dasharray="6,4" fill="none" marker-end="url(#arrow-dashed)"/>
+        <text x="1295" y="320" fill="#b91c1c" font-size="8.5" font-weight="800" transform="rotate(90, 1295, 320)" text-anchor="middle">
+          AUTOMATED IP QUARANTINE FEEDBACK LOOP (IMMEDIATE CALL DROP &amp; BAN)
+        </text>
+
+        <!-- ============================================================== -->
+        <!-- 6. SYSTEM OUTPUT & DISPATCH LAYER (EXPANDED OUTPUT CARDS)       -->
+        <!-- ============================================================== -->
+        <path d="M 1280 845 C 1300 845, 1305 820, 1320 820" stroke="#000000" stroke-width="2" fill="none"/>
+        <path d="M 1280 760 C 1300 760, 1305 820, 1320 820" stroke="#000000" stroke-width="2" fill="none"/>
+
+        <!-- Node: DISPATCH & TELEMETRY ACTUATOR -->
+        <rect x="1320" y="796" width="145" height="48" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+        <text x="1392" y="815" fill="#000000" font-size="10" font-weight="900" text-anchor="middle">DISPATCH ACTUATOR</text>
+        <text x="1392" y="831" fill="#475569" font-size="8" font-weight="700" text-anchor="middle">&amp; OUTPUT HUB</text>
+
+        <!-- Fan-out Outputs to 4 Distinct Channels -->
+        <path d="M 1465 820 C 1485 820, 1490 735, 1515 735" stroke="#000000" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <path d="M 1465 820 C 1485 820, 1490 790, 1515 790" stroke="#000000" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <path d="M 1465 820 C 1485 820, 1490 845, 1515 845" stroke="#000000" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <path d="M 1465 820 C 1485 820, 1490 900, 1515 900" stroke="#000000" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- OUTPUT CARD 1: LIVE SOC DASHBOARD -->
+        <g class="output-node" onclick="showOutputTab('spoof')">
+          <rect x="1515" y="715" width="165" height="44" rx="6" fill="#000000"/>
+          <text x="1597" y="732" fill="#ffffff" font-size="8.5" font-weight="800" text-anchor="middle">OUTPUT 1: DASHBOARD</text>
+          <text x="1597" y="746" fill="#38bdf8" font-size="7.5" font-weight="600" text-anchor="middle">WebRTC Waterfall &amp; Threat Meter</text>
+        </g>
+
+        <!-- OUTPUT CARD 2: SQLITE IP FIREWALL -->
+        <g class="output-node" onclick="showOutputTab('edge')">
+          <rect x="1515" y="770" width="165" height="44" rx="6" fill="#000000"/>
+          <text x="1597" y="787" fill="#ffffff" font-size="8.5" font-weight="800" text-anchor="middle">OUTPUT 2: IP FIREWALL</text>
+          <text x="1597" y="801" fill="#f87171" font-size="7.5" font-weight="600" text-anchor="middle">Instant Drop • Socket Code 4403</text>
+        </g>
+
+        <!-- OUTPUT CARD 3: AUDIT LOG -->
+        <g class="output-node" onclick="showOutputTab('spoof')">
+          <rect x="1515" y="825" width="165" height="44" rx="6" fill="#000000"/>
+          <text x="1597" y="842" fill="#ffffff" font-size="8.5" font-weight="800" text-anchor="middle">OUTPUT 3: AUDIT LOG</text>
+          <text x="1597" y="856" fill="#a78bfa" font-size="7.5" font-weight="600" text-anchor="middle">ACID SQLite Incident Ledger</text>
+        </g>
+
+        <!-- OUTPUT CARD 4: REST/WS JSON PAYLOAD -->
+        <g class="output-node" onclick="showOutputTab('bonafide')">
+          <rect x="1515" y="880" width="165" height="44" rx="6" fill="#000000"/>
+          <text x="1597" y="897" fill="#ffffff" font-size="8.5" font-weight="800" text-anchor="middle">OUTPUT 4: JSON VERDICT</text>
+          <text x="1597" y="911" fill="#4ade80" font-size="7.5" font-weight="600" text-anchor="middle">Sub-50ms Telemetry Response</text>
+        </g>
+
+        <!-- ============================================================== -->
+        <!-- 7. METADATA SPECIFICATION CARDS                                -->
+        <!-- ============================================================== -->
+
+        <!-- Card 1: ACOUSTIC LFCC SPECIFICATIONS -->
+        <g transform="translate(1320, 45)">
+          <rect x="0" y="0" width="360" height="135" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <rect x="0" y="0" width="360" height="28" rx="8" fill="#f1f5f9" stroke="#000000" stroke-width="2"/>
+          <text x="12" y="19" fill="#000000" font-size="9" font-weight="900" letter-spacing="0.04em">ACOUSTIC LFCC SPECIFICATIONS</text>
+          <text x="12" y="46" fill="#0f172a" font-size="8.5" font-weight="600">• Sampling Rate: 16 kHz Polyphase Rational FIR Filter</text>
+          <text x="12" y="64" fill="#0f172a" font-size="8.5" font-weight="600">• Window Length: 25 ms (400 samples) Hamming Window</text>
+          <text x="12" y="82" fill="#0f172a" font-size="8.5" font-weight="600">• Hop Size: 10 ms (160 samples frame shift)</text>
+          <text x="12" y="100" fill="#0f172a" font-size="8.5" font-weight="600">• Linear Filterbanks: 40 Uniform Triangular Filters (0 - 8000 Hz)</text>
+          <text x="12" y="118" fill="#0f172a" font-size="8.5" font-weight="600">• Feature Tensor: 400 × 60 (Static 20 + Δ 20 + ΔΔ 20)</text>
+        </g>
+
+        <!-- Card 2: 24,000-CLIP TRAINING DATASET -->
+        <g transform="translate(1320, 195)">
+          <rect x="0" y="0" width="360" height="150" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <rect x="0" y="0" width="360" height="28" rx="8" fill="#f1f5f9" stroke="#000000" stroke-width="2"/>
+          <text x="12" y="19" fill="#000000" font-size="9" font-weight="900" letter-spacing="0.04em">TRAINING POOL (24,000 AUDIO CLIPS)</text>
+          <text x="12" y="46" fill="#0f172a" font-size="8.5" font-weight="600">• Bonafide Human (50% / 12,000 clips):</text>
+          <text x="24" y="62" fill="#475569" font-size="8" font-weight="600">- 40%: In-The-Wild &amp; Diverse Indian Accents (Hindi/Bengali/Tamil/Eng)</text>
+          <text x="24" y="76" fill="#475569" font-size="8" font-weight="600">- 40%: ASVspoof 2019 Clean Benchmark Controls</text>
+          <text x="24" y="90" fill="#475569" font-size="8" font-weight="600">- 20%: G.711 / 48kHz Telephony Re-encoded Audio</text>
+          <text x="12" y="108" fill="#0f172a" font-size="8.5" font-weight="600">• AI Spoofs (50% / 12,000 clips):</text>
+          <text x="24" y="124" fill="#475569" font-size="8" font-weight="600">- 35%: ElevenLabs, VALL-E &amp; Commercial Voice Cloners</text>
+          <text x="24" y="138" fill="#475569" font-size="8" font-weight="600">- 35%: WaveFake Neural Vocoders (MelGAN, HiFi-GAN, WaveGlow)</text>
+          <text x="24" y="152" fill="#475569" font-size="8" font-weight="600">- 30%: ASVspoof 2019 Synthetics &amp; Indic Zero-Shot Clones</text>
+        </g>
+
+        <!-- Card 3: NEURAL ENGINE BENCHMARKS -->
+        <g transform="translate(1320, 360)">
+          <rect x="0" y="0" width="360" height="155" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <rect x="0" y="0" width="360" height="28" rx="8" fill="#f1f5f9" stroke="#000000" stroke-width="2"/>
+          <text x="12" y="19" fill="#000000" font-size="9" font-weight="900" letter-spacing="0.04em">NEURAL PERFORMANCE METRICS &amp; ACCURACY</text>
+          <text x="12" y="46" fill="#0f172a" font-size="8.5" font-weight="600">• Validation F1-Score: 99.96% (Balanced Threshold)</text>
+          <text x="12" y="64" fill="#0f172a" font-size="8.5" font-weight="600">• Equal Error Rate (EER): 0.04% (Epoch 7 Checkpoint)</text>
+          <text x="12" y="82" fill="#0f172a" font-size="8.5" font-weight="600">• ElevenLabs In-The-Wild Spoofs: 100% Detection Recall</text>
+          <text x="12" y="100" fill="#0f172a" font-size="8.5" font-weight="600">• WaveFake Vocoders: 100% Detection Recall</text>
+          <text x="12" y="118" fill="#0f172a" font-size="8.5" font-weight="600">• Forward Pass Neural Latency: 11 - 25 ms (CPU 8-threads)</text>
+          <text x="12" y="136" fill="#0f172a" font-size="8.5" font-weight="600">• Total End-to-End Latency: 35 - 75 ms (Within VoIP packet window)</text>
+        </g>
+
+        <!-- Card 4: DEVOPS & SYSTEM INFRASTRUCTURE -->
+        <g transform="translate(1320, 530)">
+          <rect x="0" y="0" width="360" height="150" rx="8" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+          <rect x="0" y="0" width="360" height="28" rx="8" fill="#f1f5f9" stroke="#000000" stroke-width="2"/>
+          <text x="12" y="19" fill="#000000" font-size="9" font-weight="900" letter-spacing="0.04em">DEVOPS &amp; RUNTIME INFRASTRUCTURE</text>
+          <text x="12" y="46" fill="#0f172a" font-size="8.5" font-weight="600">• Ingress Gateways: FastAPI + Uvicorn ASGI Server</text>
+          <text x="12" y="64" fill="#0f172a" font-size="8.5" font-weight="600">• Deep Learning Engine: PyTorch 2.14 (CPU Multi-Threaded)</text>
+          <text x="12" y="82" fill="#0f172a" font-size="8.5" font-weight="600">• Persistence: SQLite ACID (security_firewall.db) + L1 In-Memory Set</text>
+          <text x="12" y="100" fill="#0f172a" font-size="8.5" font-weight="600">• Real-Time Streaming: WebSocket (/ws/live-call) with 16kHz PCM Chunks</text>
+          <text x="12" y="118" fill="#0f172a" font-size="8.5" font-weight="600">• QA Test Coverage: 15/15 Pytest Suites Passing (100% Green)</text>
+        </g>
+
+      </svg>
+
+      <!-- Bottom Footer -->
+      <div class="flow-footer">
+        <div>TRUE TONE • SMART INDIA HACKATHON 2024/2025 • DUAL-LAYER CYBER DEFENSE &amp; AUDIO ANTI-SPOOFING ARCHITECTURE</div>
+        <div>PILOT: REAL-TIME VoIP / TELEPHONY GATEWAY • ARCHITECTURE BLUEPRINT &amp; OUTPUT VERDICTS</div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- LIVE OUTPUT PAYLOADS & SYSTEM ACTION SIMULATOR                -->
+    <!-- ============================================================== -->
+    <div class="outputs-container" id="liveOutputsSection">
+      <div class="outputs-header">
+        <h2><i data-lucide="terminal" style="width: 20px; height: 20px;"></i> System Outputs &amp; Dispatch Payloads</h2>
+        <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; font-family: 'JetBrains Mono', monospace;">
+          REAL-TIME JSON CONTRACTS &amp; TELEMETRY DISPATCH
+        </span>
+      </div>
+
+      <!-- Tab Buttons -->
+      <div class="output-tabs">
+        <button class="output-tab-btn active" id="tab-spoof" onclick="showOutputTab('spoof')">
+          <span>🚨</span> Output: AI Spoof Attack (Mitigated)
+        </button>
+        <button class="output-tab-btn" id="tab-bonafide" onclick="showOutputTab('bonafide')">
+          <span>✅</span> Output: Authentic Human (Admitted)
+        </button>
+        <button class="output-tab-btn" id="tab-edge" onclick="showOutputTab('edge')">
+          <span>🛑</span> Output: 403 Forbidden (Edge Dropped)
+        </button>
+        <button class="output-tab-btn" id="tab-idle" onclick="showOutputTab('idle')">
+          <span>🎙️</span> Output: Ambient Silence (Idle Bypass)
+        </button>
+      </div>
+
+      <!-- Output Display Grid -->
+      <div class="output-display-grid">
+
+        <!-- Code Box -->
+        <div class="output-panel">
+          <div class="output-panel-header">
+            <span id="outputPayloadTitle">REST / WebSocket API Output Payload</span>
+            <span>HTTP 200 OK • JSON</span>
+          </div>
+          <pre id="outputPayloadContent" style="margin: 0;"></pre>
+        </div>
+
+        <!-- Meta Details Box -->
+        <div class="output-meta-card">
+          <div class="output-meta-title" id="outputMetaTitle">
+            Action Verdict: AI Spoof Intercepted
+          </div>
+          <div>
+            <span class="output-badge-status badge-spoof" id="outputBadge">STATUS: BLOCKED / CALL DROPPED</span>
+          </div>
+          <div style="font-size: 0.85rem; color: #475569; font-weight: 500;" id="outputMetaSummary">
+            The neural engine identified high-frequency vocoder phase discrepancies ($p \ge 0.50$). The multi-frame hysteresis counter reached threshold, triggering automated IP quarantine and socket termination.
+          </div>
+          <div style="border-top: 1px solid #e2e8f0; padding-top: 10px;">
+            <div style="font-size: 0.72rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
+              Automated Defense Actions Executed:
+            </div>
+            <ul class="action-steps-list" id="outputActionsList">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Interactive Controls Bar -->
+  <aside class="controls-bar">
+    <button class="control-btn" title="Zoom In" onclick="zoomIn()"><i data-lucide="zoom-in" style="width: 18px; height: 18px;"></i></button>
+    <button class="control-btn" title="Zoom Out" onclick="zoomOut()"><i data-lucide="zoom-out" style="width: 18px; height: 18px;"></i></button>
+    <button class="control-btn" title="Reset View" onclick="resetZoom()"><i data-lucide="rotate-ccw" style="width: 18px; height: 18px;"></i></button>
+  </aside>
+
+  <script>
+    lucide.createIcons();
+
+    // ── Zoom Management ──
+    let currentScale = 1.0;
+    const card = document.querySelector('.diagram-card');
+
+    function zoomIn() {
+      currentScale = Math.min(2.0, currentScale + 0.15);
+      card.style.transform = `scale(${currentScale})`;
+      card.style.transformOrigin = 'top center';
+    }
+
+    function zoomOut() {
+      currentScale = Math.max(0.6, currentScale - 0.15);
+      card.style.transform = `scale(${currentScale})`;
+      card.style.transformOrigin = 'top center';
+    }
+
+    function resetZoom() {
+      currentScale = 1.0;
+      card.style.transform = 'scale(1.0)';
+    }
+
+    // ── Output Payloads Data ──
+    const outputData = {
+      spoof: {
+        title: "REST / WebSocket API Output: AI Spoof Attack",
+        badge: "STATUS: BLOCKED / CALL DROPPED",
+        badgeClass: "badge-spoof",
+        metaTitle: "🚨 Action Verdict: Deepfake Voice Intercepted",
+        summary: "The neural engine detected linear frequency phase distortions in the 4–8 kHz band. Sustained threat hysteresis confirmed an attack, immediately executing network-level call interception.",
+        payload: {
+          "status": "success",
+          "is_spoof": true,
+          "spoof_probability": 0.9984,
+          "risk_level": "CRITICAL",
+          "action_taken": "CALL_TERMINATED_IP_QUARANTINED",
+          "caller_ip": "198.51.100.110",
+          "latency_metrics": {
+            "vad_ms": 1.2,
+            "lfcc_extraction_ms": 14.8,
+            "neural_inference_ms": 18.5,
+            "firewall_mitigation_ms": 4.1,
+            "total_e2e_ms": 38.6
+          },
+          "telemetry": {
+            "pitch_periodicity": 0.32,
+            "spectral_flatness": 0.14,
+            "consecutive_strikes": 2,
+            "socket_close_code": 4403
+          },
+          "timestamp": "2026-09-25T22:35:10Z"
+        },
+        actions: [
+          "<b>1. Socket Disconnect:</b> WebSocket connection terminated with security status code 4403.",
+          "<b>2. O(1) Blocklist Sync:</b> Caller IP added to in-memory set and persisted to SQLite (security_firewall.db).",
+          "<b>3. SOC Alert Broadcast:</b> Real-time alert dispatched to Web Command Center with waveform telemetry.",
+          "<b>4. Forensic Audit Log:</b> Audio recording SHA-256 hash, caller IP, and threat score logged for compliance."
+        ]
+      },
+      bonafide: {
+        title: "REST / WebSocket API Output: Human Voice Verified",
+        badge: "STATUS: ADMITTED / CALL PERMITTED",
+        badgeClass: "badge-bonafide",
+        metaTitle: "✅ Action Verdict: Authentic Human Voice Permitted",
+        summary: "The neural classifier determined an authentic acoustic profile with normal biological formant resonance. The session is authorized to proceed with zero disruption.",
+        payload: {
+          "status": "success",
+          "is_spoof": false,
+          "spoof_probability": 0.0031,
+          "risk_level": "SAFE",
+          "action_taken": "CALL_PERMITTED",
+          "caller_ip": "192.168.1.45",
+          "latency_metrics": {
+            "vad_ms": 1.1,
+            "lfcc_extraction_ms": 13.9,
+            "neural_inference_ms": 17.8,
+            "total_e2e_ms": 32.8
+          },
+          "telemetry": {
+            "pitch_periodicity": 0.88,
+            "spectral_flatness": 0.08,
+            "reputation_score": 0.99
+          },
+          "timestamp": "2026-09-25T22:35:14Z"
+        },
+        actions: [
+          "<b>1. Stream Forwarding:</b> Audio stream continuously relayed to call center agent or IVR with 0ms delay.",
+          "<b>2. Dynamic Telemetry:</b> Confidence gauge updated to SAFE (0.3% spoof risk) in Web Command Center.",
+          "<b>3. Reputation Increment:</b> Caller IP trust score incremented in ip_reputation table.",
+          "<b>4. Zero Friction:</b> Transparent operation without user CAPTCHA or audible latency."
+        ]
+      },
+      edge: {
+        title: "Edge Gateway Output: 403 Forbidden Response",
+        badge: "STATUS: EDGE QUARANTINE / 403 FORBIDDEN",
+        badgeClass: "badge-edge",
+        metaTitle: "🛑 Action Verdict: Pre-Emptive Edge Interception",
+        summary: "Incoming connection from a previously quarantined IP rejected at ASGI middleware level in O(1) time without loading audio buffers or triggering GPU/CPU inference.",
+        payload: {
+          "error": "Forbidden",
+          "status_code": 403,
+          "detail": "Client IP is actively quarantined by True Tone Firewall",
+          "blocked_ip": "198.51.100.110",
+          "quarantine_reason": "AI_SPOOF_AUTO_BLOCK",
+          "expires_in_seconds": 3480,
+          "edge_lookup_latency_ms": 0.18,
+          "timestamp": "2026-09-25T22:35:20Z"
+        },
+        actions: [
+          "<b>1. Immediate Drop:</b> HTTP 403 Forbidden returned in 0.18ms, preventing DoS attacks.",
+          "<b>2. CPU Preservation:</b> Bypasses signal processing, VAD, and neural inference entirely.",
+          "<b>3. Access Audit:</b> Failed ingress attempt logged to blocked_ips_access_attempts ledger.",
+          "<b>4. Quarantine Lease:</b> Automatic unblock timer maintained in SQLite (default 3600 seconds)."
+        ]
+      },
+      idle: {
+        title: "Acoustic VAD Output: Non-Speech Idle Telemetry",
+        badge: "STATUS: IDLE / BYPASS INFERENCE",
+        badgeClass: "badge-idle",
+        metaTitle: "🎙️ Action Verdict: Ambient Noise Detected (VAD Bypass)",
+        summary: "The 4-criteria formant gating filter identified ambient room reverberation, air conditioner hum, or silence. Deep neural inference was bypassed in 0.54ms to conserve server compute.",
+        payload: {
+          "status": "idle",
+          "is_silent": true,
+          "is_spoof": false,
+          "spoof_probability": 0.0,
+          "action_taken": "BYPASS_INFERENCE_KEEP_ALIVE",
+          "caller_ip": "192.168.1.45",
+          "vad_diagnostics": {
+            "max_amplitude": 0.021,
+            "rms_energy": 0.0041,
+            "pitch_autocorrelation": 0.18,
+            "formant_band_energy": 0.08,
+            "spectral_flatness": 0.52
+          },
+          "latency_ms": 0.54,
+          "timestamp": "2026-09-25T22:35:25Z"
+        },
+        actions: [
+          "<b>1. Compute Savings:</b> Neural inference bypassed, saving 98% CPU cycles on non-speech packets.",
+          "<b>2. Suspicion Decay:</b> Multi-frame hysteresis strike counter decayed towards 0.",
+          "<b>3. Keep-Alive:</b> WebSocket heartbeat maintained without dropping connection.",
+          "<b>4. Background Telemetry:</b> Ambient noise floor calibrated dynamically for next vocal frame."
+        ]
+      }
+    };
+
+    function showOutputTab(key) {
+      document.querySelectorAll('.output-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('tab-' + key);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const data = outputData[key];
+      if (!data) return;
+
+      document.getElementById('outputPayloadTitle').innerText = data.title;
+      document.getElementById('outputPayloadContent').innerText = JSON.stringify(data.payload, null, 2);
+      document.getElementById('outputMetaTitle').innerText = data.metaTitle;
+      
+      const badge = document.getElementById('outputBadge');
+      badge.innerText = data.badge;
+      badge.className = 'output-badge-status ' + data.badgeClass;
+
+      document.getElementById('outputMetaSummary').innerHTML = data.summary;
+      
+      const list = document.getElementById('outputActionsList');
+      list.innerHTML = data.actions.map(act => `<li><i data-lucide="check-circle" style="width:14px; height:14px; color:#0f172a; flex-shrink:0; margin-top:2px;"></i> <span>${act}</span></li>`).join('');
+
+      lucide.createIcons();
+    }
+
+    // Initialize with Spoof output active
+    showOutputTab('spoof');
+  </script>
+</body>
+</html>

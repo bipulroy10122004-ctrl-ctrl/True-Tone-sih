@@ -1,0 +1,33 @@
+<div class="panel">
+  <div class="panel-header">
+    <h2 class="panel-title">
+      <span>🛡️</span>
+      <span>Active Firewall Blocklist</span>
+    </h2>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <button class="btn-unblock" style="font-size: 0.775rem; padding: 0.4rem 0.85rem;" onclick="openQuickUnblockModal()">🔓 Quick Unblock</button>
+      <button class="btn-unblock" style="background: rgba(239, 68, 68, 0.15); color: var(--accent-crimson); border-color: rgba(239, 68, 68, 0.3); font-size: 0.775rem; padding: 0.4rem 0.85rem;" onclick="unblockAllIps()" title="Unblock all active quarantined IPs">Clear All Bans</button>
+      <button class="btn-block-action" onclick="openManualBlockModal()">+ Quarantine IP</button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="firewall-table">
+      <thead>
+        <tr>
+          <th>Origin IP</th>
+          <th>Reason / Threat</th>
+          <th>TTL Remaining</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="blocklistTbody">
+        <tr>
+          <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            Loading active blocklist...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

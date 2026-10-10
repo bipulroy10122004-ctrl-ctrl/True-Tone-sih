@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <!-- 1. Real-Time Telemetry Metrics -->
+  {% include "components/telemetry.html" %}
+
+  <!-- 2. Dual-Column Dashboard Grid -->
+  <div class="dashboard-grid">
+
+    <!-- Left Column: Audio Inspection & Live Mitigation Gateway -->
+    <section class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span>🎙️</span>
+          <span>Live Audio Inspection & IP Mitigation</span>
+        </h2>
+        <span class="status-badge" style="font-size: 0.7rem;">Real-Time Defense</span>
+      </div>
+
+      <!-- Mode Selector Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" id="tabLiveCall" onclick="switchTab('livecall')">📞 Live IP Call Gateway</button>
+        <button class="tab-btn" id="tabSimulator" onclick="switchTab('simulator')">🚀 Quick Simulator</button>
+        <button class="tab-btn" id="tabUpload" onclick="switchTab('upload')">📁 Custom Audio Upload</button>
+      </div>
+
+      <!-- Tab Views -->
+      {% include "components/live_call.html" %}
+      {% include "components/simulator.html" %}
+      {% include "components/upload.html" %}
+
+      <!-- Real-Time Verdict & Confidence Gauge -->
+      {% include "components/verdict.html" %}
+    </section>
+
+    <!-- Right Column: Active Firewall & Incident Ledger -->
+    <section style="display: flex; flex-direction: column; gap: 2rem;">
+      {% include "components/firewall.html" %}
+      {% include "components/incidents.html" %}
+    </section>
+
+  </div>
+{% endblock %}
