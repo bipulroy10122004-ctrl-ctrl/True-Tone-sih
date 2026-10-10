@@ -1,0 +1,22 @@
+<div id="viewUpload" style="display: none;">
+  <div class="input-group">
+    <label class="input-label" for="uploadCallerIp">Caller / Client IP to Inspect:</label>
+    <div style="display: flex; gap: 0.5rem;">
+      <input type="text" id="uploadCallerIp" class="input-control" value="203.0.113.88" placeholder="e.g. 203.0.113.88">
+      <button type="button" class="btn-unblock" style="white-space: nowrap; padding: 0.5rem 1rem; border-radius: 8px;" onclick="unblockIp(document.getElementById('uploadCallerIp').value.trim())" title="Unblock this IP if banned">🔓 Unblock IP</button>
+    </div>
+  </div>
+
+  <div class="dropzone" id="audioDropzone" onclick="document.getElementById('fileInput').click()">
+    <div class="dropzone-icon">☁️</div>
+    <div style="font-weight: 600; margin-bottom: 0.25rem;">Drop audio file here or click to browse</div>
+    <div style="font-size: 0.75rem; color: var(--text-muted);">Supports .FLAC, .WAV, .MP3 (16kHz recommended)</div>
+    <div id="selectedFileName" style="margin-top: 0.75rem; font-family: var(--font-mono); color: var(--accent-cyan); font-size: 0.85rem;"></div>
+  </div>
+  <input type="file" id="fileInput" accept=".flac,.wav,.mp3" style="display: none;" onchange="handleFileSelected(event)">
+
+  <button class="btn-primary" id="btnUploadInspect" onclick="uploadAndInspectAudio()">
+    <span>🔍</span>
+    <span>Analyze Audio with ML Model</span>
+  </button>
+</div>

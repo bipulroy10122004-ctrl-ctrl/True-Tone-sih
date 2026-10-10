@@ -81,10 +81,11 @@ Traditional audio classification relies on **Mel-Frequency Cepstral Coefficients
 
 ### 3.2 Advanced Voice Activity Detection (VAD) & Ambient Noise Gating
 To eliminate false alarms caused by background fan hum, room reverberation, air conditioning, and microphone hiss, `detect_voice_activity` enforces four acoustic criteria:
-- **Adaptive Energy Floor**: Calculates the 20th percentile of short-time frame RMS energies as the dynamic noise floor; speech must exceed $\max(0.006, \text{noise\_floor} \times 1.6)$.
-- **Harmonic Periodicity (Pitch Autocorrelation)**: Evaluates autocorrelation in the human fundamental frequency range ($70\text{ Hz} - 500\text{ Hz}$). Genuine speech requires $\text{max\_pitch} \ge 0.55$ and $\text{voiced\_ratio} \ge 0.15$.
-- **Vocal Tract Formant Band Energy**: Formants concentrate acoustic energy in $250\text{ Hz} - 3,500\text{ Hz}$. Non-speech noise is rejected if the voice-band energy ratio is below $0.25$.
-- **Spectral Flatness**: Rejects broadband white/pink stationary noise if spectral flatness exceeds $0.45$.
+- **Adaptive Energy Floor**: Calculates the 15th percentile of short-time frame RMS energies as the dynamic noise floor; speech threshold is dynamically bounded by $\max(0.002, \min(\text{noise\_floor} \times 1.25, \text{mean\_rms} \times 0.6))$, ensuring continuous speech from remote call tabs is not falsely discarded as stationary noise.
+- **Harmonic Periodicity (Pitch Autocorrelation)**: Evaluates autocorrelation in the human fundamental frequency range ($70\text{ Hz} - 500\text{ Hz}$). Genuine speech requires $\text{max\_pitch} \ge 0.50$ and $\text{voiced\_ratio} \ge 0.08$.
+- **Vocal Tract Formant Band Energy**: Formants concentrate acoustic energy in $250\text{ Hz} - 3,500\text{ Hz}$. Non-speech noise is rejected if the voice-band energy ratio is below $0.15$.
+- **Spectral Flatness**: Rejects broadband white/pink stationary noise if spectral flatness exceeds $0.50$.
+- **Speech-Gated Normalization**: Pre-amplifies soft call audio from remote web tabs (WhatsApp Web, Google Meet) to standard $0.75$ reference amplitude before neural feature extraction without amplifying pure silence.
 
 ---
 

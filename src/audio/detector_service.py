@@ -23,7 +23,7 @@ DEFAULT_MODEL_PATH = os.path.abspath(
     os.path.join(SCRIPT_DIR, "..", "..", "models", "best_audio_spoof_model.pt")
 )
 
-def detect_voice_activity(audio_source, amp_thresh: float = 0.025, rms_thresh: float = 0.0035) -> tuple[bool, dict]:
+def detect_voice_activity(audio_source, amp_thresh: float = 0.008, rms_thresh: float = 0.0008) -> tuple[bool, dict]:
     """
     Robust Voice Activity & Speech Presence Detection (VAD).
     Accurately distinguishes genuine human vocal speech (or AI deepfake synthesized speech)
@@ -85,13 +85,17 @@ def detect_voice_activity(audio_source, amp_thresh: float = 0.025, rms_thresh: f
         num_frames = max(1, 1 + (len(y) - frame_len) // hop_len)
         frame_rmss = np.array([np.sqrt(np.mean(y[i * hop_len : i * hop_len + frame_len] ** 2)) for i in range(num_frames)])
 
-        # Estimate background noise floor from lower 20th percentile
-        noise_floor = float(np.percentile(frame_rmss, 20))
-        speech_thresh = max(0.006, noise_floor * 1.6)
+        # Robust noise floor estimation:
+        # Handles both intermittent speech (speech bursts over quiet background)
+        # AND continuous speech (where lower percentile is also speech)
+        noise_floor = float(np.percentile(frame_rmss, 15))
+        mean_rms = float(np.mean(frame_rmss))
+        # Adaptive speech threshold: does not overshoot when caller speaks continuously
+        speech_thresh = max(0.002, min(noise_floor * 1.25, mean_rms * 0.6))
 
         active_speech_frames = int(np.sum(frame_rmss >= speech_thresh))
-        min_required_frames = max(2, int(0.04 * num_frames))
-        if active_speech_frames < min_required_frames:
+        min_required_frames = max(1, int(0.02 * num_frames))
+        if active_speech_frames < min_required_frames and mean_rms < 0.005:
             print(f"[VAD] AMBIENT NOISE (few speech frames: {active_speech_frames}/{num_frames}): max_amp={max_amp:.5f}, rms={rms:.5f}")
             return False, {"reason": "stationary_noise_floor", "max_amp": max_amp, "rms": rms, "noise_floor": noise_floor}
 
@@ -135,19 +139,19 @@ def detect_voice_activity(audio_source, amp_thresh: float = 0.025, rms_thresh: f
         avg_pitch = float(np.mean(pitch_peaks))
         avg_vb = float(np.mean(voice_band_energies))
         avg_flat = float(np.mean(spectral_flatnesses))
-        voiced_frame_count = sum(1 for p in pitch_peaks if p >= 0.50)
+        voiced_frame_count = sum(1 for p in pitch_peaks if p >= 0.45)
         voiced_ratio = voiced_frame_count / max(1, len(pitch_peaks))
 
         # Distinguish Vocal Speech vs Ambient Noise:
-        # - Speech has clear pitch harmonics (max_pitch >= 0.55, voiced_ratio >= 0.12)
-        # - Speech energy is concentrated in vocal tract formant range (avg_vb >= 0.18 or strong harmonic pitch)
-        # - Speech has resonant formants rather than flat noise (avg_flat < 0.45)
-        is_voiced = (max_pitch >= 0.55 and voiced_ratio >= 0.12)
-        is_in_voice_band = (avg_vb >= 0.18 or max_pitch >= 0.70)
-        is_not_flat_noise = (avg_flat < 0.45)
+        # - Speech has clear pitch harmonics (max_pitch >= 0.50, voiced_ratio >= 0.08)
+        # - Speech energy is concentrated in vocal tract formant range (avg_vb >= 0.15 or strong harmonic pitch)
+        # - Speech has resonant formants rather than flat noise (avg_flat < 0.50)
+        # OR if chunk has high energy and strong speech harmonics
+        is_voiced = (max_pitch >= 0.50 and voiced_ratio >= 0.08)
+        is_in_voice_band = (avg_vb >= 0.15 or max_pitch >= 0.65)
+        is_not_flat_noise = (avg_flat < 0.50)
 
-        is_speech = bool(is_voiced and is_in_voice_band and is_not_flat_noise)
-
+        is_speech = bool((is_voiced and is_in_voice_band and is_not_flat_noise) or (max_pitch >= 0.70 and avg_vb >= 0.20))
 
         details = {
             "is_speech": is_speech,

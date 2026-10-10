@@ -75,17 +75,40 @@ async def serve_dashboard(request: Request):
 
 @app.get("/roadmap", response_class=FileResponse)
 async def serve_roadmap():
-    roadmap_path = os.path.join(PROJECT_ROOT, "TRUE_TONE_ROADMAP.html")
-    if os.path.exists(roadmap_path):
-        return FileResponse(roadmap_path)
+    paths_to_check = [
+        os.path.join(TEMPLATES_DIR, "pages", "roadmap.html"),
+        os.path.join(TEMPLATES_DIR, "roadmap.html"),
+        os.path.join(PROJECT_ROOT, "TRUE_TONE_ROADMAP.html"),
+        os.path.join(PROJECT_ROOT, "docs", "TRUE_TONE_ROADMAP.html")
+    ]
+    for p in paths_to_check:
+        if os.path.exists(p):
+            return FileResponse(p)
     raise HTTPException(status_code=404, detail="Roadmap file not found")
 
 @app.get("/documentation", response_class=FileResponse)
 async def serve_documentation():
-    doc_path = os.path.join(PROJECT_ROOT, "DOCUMENTATION.html")
-    if os.path.exists(doc_path):
-        return FileResponse(doc_path)
+    paths_to_check = [
+        os.path.join(TEMPLATES_DIR, "pages", "documentation.html"),
+        os.path.join(PROJECT_ROOT, "DOCUMENTATION.html"),
+        os.path.join(PROJECT_ROOT, "docs", "DOCUMENTATION.html")
+    ]
+    for p in paths_to_check:
+        if os.path.exists(p):
+            return FileResponse(p)
     raise HTTPException(status_code=404, detail="Documentation file not found")
+
+@app.get("/flowchart", response_class=FileResponse)
+async def serve_flowchart():
+    paths_to_check = [
+        os.path.join(TEMPLATES_DIR, "pages", "flowchart.html"),
+        os.path.join(PROJECT_ROOT, "TRUE_TONE_FLOWCHART.html"),
+        os.path.join(PROJECT_ROOT, "docs", "TRUE_TONE_FLOWCHART.html")
+    ]
+    for p in paths_to_check:
+        if os.path.exists(p):
+            return FileResponse(p)
+    raise HTTPException(status_code=404, detail="Flowchart file not found")
 
 # --- Audio Sample Serving ---
 

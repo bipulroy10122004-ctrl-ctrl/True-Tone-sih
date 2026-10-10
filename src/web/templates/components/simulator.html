@@ -1,0 +1,26 @@
+<div id="viewSimulator" style="display: none;">
+  <div class="input-group">
+    <label class="input-label" for="simCallerIp">Simulated Originating Caller IP Address:</label>
+    <input type="text" id="simCallerIp" class="input-control" value="198.51.100.42" placeholder="e.g. 198.51.100.42">
+  </div>
+
+  <label class="input-label">Select Audio Stream to Transmit:</label>
+  <div class="sample-picker">
+    <div class="sample-card spoof-sample selected" id="sampleCardSpoof" onclick="selectSample('spoof')">
+      <span class="sample-badge spoof">Deepfake Attack</span>
+      <div class="sample-title">Synthetic AI Voice (Spoof)</div>
+      <div class="sample-desc">Generated via ASVspoof neural vocoder</div>
+    </div>
+
+    <div class="sample-card bonafide-sample" id="sampleCardBonafide" onclick="selectSample('bonafide')">
+      <span class="sample-badge bonafide">Authentic</span>
+      <div class="sample-title">Natural Human Voice (Bonafide)</div>
+      <div class="sample-desc">Clean acoustic human vocal tract</div>
+    </div>
+  </div>
+
+  <button class="btn-primary" id="btnRunSim" onclick="runSimulation()">
+    <span>⚡</span>
+    <span>Transmit Voice Stream & Test Defense</span>
+  </button>
+</div>

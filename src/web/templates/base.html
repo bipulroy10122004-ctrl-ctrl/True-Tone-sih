@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}True Tone SIH - AI Voice Detection & IP Firewall Defense{% endblock %}</title>
+  
+  <!-- Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/static/css/style.css">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  {% include "components/header.html" %}
+
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "components/modals.html" %}
+
+  <script src="/static/js/dashboard.js"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

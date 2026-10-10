@@ -101,6 +101,21 @@ function selectAudioSource(source) {
   if (micPicker) {
     micPicker.style.display = source === 'mic' ? 'block' : 'none';
   }
+
+  const sourceLabel = document.getElementById('liveSourceLabel');
+  const sourceBadge = document.getElementById('liveSourceBadge');
+  if (sourceLabel) {
+    if (source === 'tab') {
+      sourceLabel.innerText = 'AUDIO SOURCE: 🔊 TAP CALL TAB / SYSTEM (READY)';
+      if (sourceBadge) sourceBadge.style.background = '#a855f7';
+    } else if (source === 'mic') {
+      sourceLabel.innerText = 'AUDIO SOURCE: 🎙️ LIVE MICROPHONE (READY)';
+      if (sourceBadge) sourceBadge.style.background = '#00f2fe';
+    } else {
+      sourceLabel.innerText = 'AUDIO SOURCE: ⚡ SIMULATED FEED (READY)';
+      if (sourceBadge) sourceBadge.style.background = '#f43f5e';
+    }
+  }
 }
 
 function setSimVoiceType(type) {
@@ -186,7 +201,9 @@ function updateAudioSignalMeter(rms) {
   }
 }
 
-// Canvas Waveform Oscilloscope Visualizer
+// Canvas Multi-Band Frequency Spectrum Equalizer & Waveform HUD Visualizer
+let peakBars = new Float32Array(36).fill(0);
+
 function startCanvasVisualizer() {
   const canvas = document.getElementById('liveAudioCanvas');
   if (!canvas || !analyserNode) return;
@@ -194,40 +211,130 @@ function startCanvasVisualizer() {
 
   // Fix internal coordinate resolution to match DOM element
   canvas.width = canvas.offsetWidth || 600;
-  canvas.height = 60;
+  canvas.height = 75;
 
   const ctx = canvas.getContext('2d');
-  const bufferLength = analyserNode.frequencyBinCount;
-  const dataArray = new Uint8Array(bufferLength);
+  const bufferLength = analyserNode.frequencyBinCount; // 128 bins for fftSize=256
+  const freqData = new Uint8Array(bufferLength);
+  const timeData = new Uint8Array(bufferLength);
+
+  const numBars = 36;
+  if (peakBars.length !== numBars) {
+    peakBars = new Float32Array(numBars).fill(0);
+  }
+
+  const sampleRate = (audioContext && audioContext.sampleRate) ? audioContext.sampleRate : 48000;
+  const minFreq = 60;   // 60 Hz
+  const maxFreq = 7500; // 7.5 kHz (covers full human voice vocal tract harmonics)
+  const telemLabel = document.getElementById('liveFrequencyTelemetry');
 
   function render() {
     animFrameId = requestAnimationFrame(render);
-    analyserNode.getByteTimeDomainData(dataArray);
+    analyserNode.getByteFrequencyData(freqData);
+    analyserNode.getByteTimeDomainData(timeData);
 
-    ctx.fillStyle = 'rgba(10, 15, 25, 0.4)';
+    // Dark sleek cyberpunk visualizer background
+    ctx.fillStyle = 'rgba(7, 12, 20, 0.45)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#00f2fe';
-    ctx.beginPath();
-
-    const sliceWidth = canvas.width * 1.0 / bufferLength;
-    let x = 0;
-
-    for (let i = 0; i < bufferLength; i++) {
-      const v = dataArray[i] / 128.0;
-      const y = v * canvas.height / 2;
-
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-      x += sliceWidth;
+    // Subtle horizontal grid lines
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    for (let gy = 15; gy < canvas.height; gy += 15) {
+      ctx.beginPath();
+      ctx.moveTo(0, gy);
+      ctx.lineTo(canvas.width, gy);
+      ctx.stroke();
     }
 
-    ctx.lineTo(canvas.width, canvas.height / 2);
+    // 1. Draw Multi-Band Frequency Spectrum Bars (Logarithmically spaced)
+    const padding = 2;
+    const barWidth = Math.max(2, (canvas.width - (numBars - 1) * padding) / numBars);
+    let maxBinVal = 0;
+    let dominantFreq = 0;
+
+    for (let i = 0; i < numBars; i++) {
+      // Map bar index to frequency bounds (log scale)
+      const fStart = minFreq * Math.pow(maxFreq / minFreq, i / numBars);
+      const fEnd = minFreq * Math.pow(maxFreq / minFreq, (i + 1) / numBars);
+
+      const binStart = Math.max(0, Math.min(bufferLength - 1, Math.floor((fStart / (sampleRate / 2)) * bufferLength)));
+      const binEnd = Math.max(binStart + 1, Math.min(bufferLength, Math.ceil((fEnd / (sampleRate / 2)) * bufferLength)));
+
+      let sum = 0;
+      let count = 0;
+      for (let b = binStart; b < binEnd; b++) {
+        sum += freqData[b];
+        count++;
+        if (freqData[b] > maxBinVal) {
+          maxBinVal = freqData[b];
+          dominantFreq = Math.round((b / bufferLength) * (sampleRate / 2));
+        }
+      }
+      const avg = count > 0 ? (sum / count) : 0;
+
+      // Apply power curve scaling so low-to-medium volume voices jump vividly
+      const normalized = avg / 255.0;
+      const barHeight = Math.pow(normalized, 0.68) * (canvas.height - 14);
+
+      // Peak cap with gravitational decay
+      if (barHeight >= peakBars[i]) {
+        peakBars[i] = barHeight;
+      } else {
+        peakBars[i] = Math.max(0, peakBars[i] - 1.2);
+      }
+
+      const x = i * (barWidth + padding);
+      const y = canvas.height - barHeight - 2;
+
+      // Dynamic vibrant gradient: Cyan -> Purple -> Neon Rose
+      const grad = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
+      grad.addColorStop(0, '#00f2fe');
+      grad.addColorStop(0.55, '#a855f7');
+      grad.addColorStop(1.0, '#f43f5e');
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, y, barWidth, barHeight);
+
+      // Draw floating studio peak cap
+      if (peakBars[i] > 3) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x, canvas.height - peakBars[i] - 3, barWidth, 2);
+      }
+    }
+
+    // 2. Overlay Smooth Acoustic Waveform Envelope Tracer
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(0, 242, 254, 0.45)';
+    ctx.beginPath();
+    const sliceWidth = canvas.width / bufferLength;
+    let wx = 0;
+    for (let i = 0; i < bufferLength; i++) {
+      const v = timeData[i] / 128.0;
+      // Centered around mid-canvas with amplified visual deflection
+      const wy = (canvas.height / 2) + (v - 1.0) * (canvas.height * 0.85);
+      if (i === 0) {
+        ctx.moveTo(wx, wy);
+      } else {
+        ctx.lineTo(wx, wy);
+      }
+      wx += sliceWidth;
+    }
     ctx.stroke();
+
+    // 3. Update Frequency Telemetry HUD
+    if (telemLabel) {
+      if (maxBinVal > 25 && dominantFreq >= 80 && dominantFreq <= 4500) {
+        telemLabel.innerText = `VOCAL FREQ: ~${dominantFreq} Hz · [VOICE PHONEMES ACTIVE]`;
+        telemLabel.style.color = '#00f2fe';
+      } else if (maxBinVal > 15) {
+        telemLabel.innerText = `ACOUSTIC SPECTRUM: ~${dominantFreq} Hz · [SOUND DETECTED]`;
+        telemLabel.style.color = '#a855f7';
+      } else {
+        telemLabel.innerText = `STANDBY · WAITING FOR IN-CALL SPEECH`;
+        telemLabel.style.color = 'var(--text-muted)';
+      }
+    }
   }
 
   render();
@@ -244,6 +351,8 @@ async function startLiveIpCall() {
   const bannerMsg = document.getElementById('liveBannerMsg');
   const btnStart = document.getElementById('btnStartCall');
   const btnEnd = document.getElementById('btnEndCall');
+  const sourceLabel = document.getElementById('liveSourceLabel');
+  const sourceBadge = document.getElementById('liveSourceBadge');
 
   // STEP 1: Prompt for and acquire Media Stream IMMEDIATELY while user gesture is active
   if (selectedAudioSource === 'mic' || selectedAudioSource === 'tab') {
@@ -263,33 +372,43 @@ async function startLiveIpCall() {
           audioConstraints.deviceId = { exact: deviceId };
         }
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+
+        if (sourceLabel) sourceLabel.innerText = 'AUDIO SOURCE: 🎙️ LIVE MICROPHONE';
+        if (sourceBadge) {
+          sourceBadge.style.background = '#00f2fe';
+          sourceBadge.style.boxShadow = '0 0 8px #00f2fe';
+        }
       } else {
-        // Tab / System audio: capture the remote caller's voice from the call tab
-        // CRITICAL: video track MUST stay alive — stopping it kills audio on Chrome
+        // Tab / System audio: capture the remote caller's voice from WhatsApp Web, Google Meet, Teams, etc.
+        // Progressive constraints: hint Chrome to open the "Chrome Tab" selection by default
+        const displayConstraints = {
+          video: {
+            displaySurface: 'browser'
+          },
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            suppressLocalAudioPlayback: false
+          },
+          systemAudio: 'include',
+          selfBrowserSurface: 'exclude',
+          surfaceSwitching: 'include'
+        };
+
         try {
-          mediaStream = await navigator.mediaDevices.getDisplayMedia({
-            video: {
-              width: { ideal: 1 },
-              height: { ideal: 1 },
-              frameRate: { ideal: 1 }
-            },
-            audio: {
-              echoCancellation: false,
-              noiseSuppression: false,
-              autoGainControl: false,
-              suppressLocalAudioPlayback: false
-            },
-            systemAudio: 'include',
-            selfBrowserSurface: 'exclude',
-            surfaceSwitching: 'include',
-            preferCurrentTab: false
-          });
-        } catch (displayErr) {
-          console.warn('Tab audio sharing cancelled or rejected:', displayErr);
-          statusText.innerText = 'CALL GUARDIAN: STANDBY';
-          pulseDot.className = 'call-pulse-dot';
-          showToast('Call audio sharing was cancelled or denied.', 'warning');
-          return;
+          mediaStream = await navigator.mediaDevices.getDisplayMedia(displayConstraints);
+        } catch (firstErr) {
+          console.warn('[TrueTone] Modern tab constraints rejected, falling back to standard constraints...', firstErr);
+          try {
+            mediaStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+          } catch (displayErr) {
+            console.warn('Tab audio sharing cancelled or rejected:', displayErr);
+            statusText.innerText = 'CALL GUARDIAN: STANDBY';
+            pulseDot.className = 'call-pulse-dot';
+            showToast('Call audio sharing was cancelled or denied.', 'warning');
+            return;
+          }
         }
 
         // Validate that an audio track was actually selected
@@ -307,56 +426,81 @@ async function startLiveIpCall() {
           statusText.innerText = 'CALL GUARDIAN: STANDBY';
           pulseDot.className = 'call-pulse-dot';
           openTabAudioHelpModal();
-          showToast('No audio track selected! Please check "Also share tab audio" or "Share system audio".', 'danger');
+          showToast('No audio track selected! Please check "Also share tab audio" in the Chrome Tab dialog.', 'danger');
           return;
         }
 
-        // DO NOT stop video tracks! On Chrome, getDisplayMedia ties audio+video
-        // together — stopping video will TERMINATE the audio track too, causing
-        // all-zero sample buffers. The video is already minimal (1x1 @ 1fps).
+        const audioTrack = audioTracks[0];
+        audioTrack.enabled = true;
+        audioTrack.onmute = () => {
+          console.log('[TrueTone] Call audio track muted by tab/browser.');
+        };
+        audioTrack.onunmute = () => {
+          console.log('[TrueTone] Call audio track unmuted - active incoming audio received.');
+        };
 
-        audioTracks[0].onended = () => {
+        audioTrack.onended = () => {
           console.log('In-call audio track ended by user.');
           endLiveIpCall();
           showToast('Call audio stream stopped.', 'info');
         };
+
+        if (sourceLabel) sourceLabel.innerText = `AUDIO SOURCE: 🔊 ${audioTrack.label || 'CALL TAB AUDIO'}`;
+        if (sourceBadge) {
+          sourceBadge.style.background = '#10b981';
+          sourceBadge.style.boxShadow = '0 0 8px #10b981';
+        }
       }
 
       // Initialize Web Audio API at the NATIVE system sample rate
-      // CRITICAL: Do NOT force sampleRate to 16000! Chrome's getDisplayMedia
-      // audio runs at the system rate (48000Hz). Forcing 16kHz causes the
-      // MediaStreamSource to produce all-zero buffers because Chrome cannot
-      // resample the incoming capture stream to a non-native context rate.
       const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
       audioContext = new AudioCtxClass();
       if (audioContext.state === 'suspended') {
         await audioContext.resume();
       }
       window._activeAudioContext = audioContext;
+
+      // Auto-resume AudioContext if browser suspends it when switching tabs
+      audioContext.onstatechange = () => {
+        if (audioContext && audioContext.state === 'suspended') {
+          console.log('[TrueTone] AudioContext suspended, auto-resuming...');
+          audioContext.resume();
+        }
+      };
+
       const nativeSr = audioContext.sampleRate; // Typically 44100 or 48000
       console.log('[TrueTone] AudioContext sampleRate:', nativeSr, 'state:', audioContext.state);
 
-      // Connect source node from media stream (use ORIGINAL stream, not a clone)
-      const sourceNode = audioContext.createMediaStreamSource(mediaStream);
+      // Create isolated audio stream from audio tracks only
+      const audioOnlyStream = new MediaStream(mediaStream.getAudioTracks());
+      const sourceNode = audioContext.createMediaStreamSource(audioOnlyStream);
       window._activeSourceNode = sourceNode;
 
-      // Analyser Node for Oscilloscope
+      // Dedicated Visualizer Gain Node:
+      // Tab audio from remote callers can be soft; boost sensitivity for the visualizer
+      // so frequency bars fluctuate dynamically and energetically
+      const visualizerGain = audioContext.createGain();
+      visualizerGain.gain.value = selectedAudioSource === 'tab' ? 5.0 : 3.0;
+
       analyserNode = audioContext.createAnalyser();
-      analyserNode.fftSize = 512;
-      sourceNode.connect(analyserNode);
+      analyserNode.fftSize = 256; // 128 frequency bins
+      analyserNode.smoothingTimeConstant = 0.72; // Snappy, lively frequency dynamics
+
+      sourceNode.connect(visualizerGain);
+      visualizerGain.connect(analyserNode);
       startCanvasVisualizer();
 
       // Detect actual channel count from the audio stream
       const trackSettings = mediaStream.getAudioTracks()[0]?.getSettings() || {};
       const streamChannels = trackSettings.channelCount || 1;
-      console.log('[TrueTone] Audio track channel count:', streamChannels);
-
-      // ScriptProcessorNode — match channel count to stream (1 for tab audio, 1-2 for mic)
       const procChannels = Math.min(streamChannels, 2);
-      // Accumulate 2 seconds of audio at the NATIVE rate, then downsample to 16kHz
-      const targetSeconds = 2.0;
+
+      // Accumulate 1.5 seconds of audio at the native rate, with 0.75s overlap
+      // This sends a fresh chunk every 750ms for near real-time live threat verdicts!
+      const targetSeconds = 1.5;
       const targetChunkSamples = Math.round(nativeSr * targetSeconds);
-      const overlapSamples = Math.round(nativeSr * 1.0);
+      const overlapSamples = Math.round(nativeSr * 0.75);
+
       scriptProcessor = audioContext.createScriptProcessor(4096, procChannels, 1);
       window._activeScriptProcessor = scriptProcessor;
       pcmBuffer = [];
@@ -364,8 +508,7 @@ async function startLiveIpCall() {
       // Audio flow diagnostics
       let _totalSamplesReceived = 0;
       let _nonZeroSamples = 0;
-      let _diagInterval = null;
-      _diagInterval = setInterval(() => {
+      let _diagInterval = setInterval(() => {
         const pct = _totalSamplesReceived > 0 ? ((_nonZeroSamples / _totalSamplesReceived) * 100).toFixed(1) : '0.0';
         console.log(`[TrueTone AudioDiag] sr=${nativeSr}, Total samples: ${_totalSamplesReceived}, Non-zero: ${_nonZeroSamples} (${pct}%), Buffer: ${pcmBuffer.length}`);
       }, 5000);
@@ -381,7 +524,7 @@ async function startLiveIpCall() {
           e.outputBuffer.getChannelData(c).fill(0);
         }
 
-        // Mix down channels (for mic stereo) or use mono directly (for tab audio)
+        // Mix down channels or use mono directly
         let sumSquares = 0;
         if (numCh > 1) {
           const ch1 = inBuf.getChannelData(1);
@@ -408,7 +551,7 @@ async function startLiveIpCall() {
           const chunk = pcmBuffer.slice(0, targetChunkSamples);
           pcmBuffer = pcmBuffer.slice(overlapSamples);
 
-          // Downsample from native rate to 16kHz before sending to backend
+          // Downsample from native rate to 16kHz before sending to model
           const downsampled = downsampleBuffer(chunk, nativeSr, 16000);
 
           // Calculate chunk peak amplitude and RMS energy
@@ -422,50 +565,51 @@ async function startLiveIpCall() {
           const chunkRms = Math.sqrt(sumSquaresChunk / downsampled.length);
 
           // Speech-gated normalization:
-          // When active speech is present, normalize to standard 0.85 reference amplitude
-          // without amplifying near-silent background pause
-          if (peakAmp >= 0.03 && chunkRms >= 0.005) {
-            const normGain = Math.min(10.0, 0.85 / peakAmp);
+          // Accurately scales remote caller voice (even if quiet from WhatsApp/Meet)
+          // up to optimal reference level (0.75) without digital clipping
+          if (peakAmp >= 0.003 && chunkRms >= 0.0004) {
+            const targetPeak = 0.75;
+            const normGain = Math.min(25.0, targetPeak / Math.max(peakAmp, 0.005));
             for (let i = 0; i < downsampled.length; i++) {
-              downsampled[i] *= normGain;
+              downsampled[i] = Math.max(-1.0, Math.min(1.0, downsampled[i] * normGain));
             }
           }
 
           const wavBytes = encodeWAV(downsampled, 16000);
           if (liveSocket && liveSocket.readyState === WebSocket.OPEN) {
             liveSocket.send(wavBytes);
-            console.log(`[TrueTone] Sent WAV chunk: ${wavBytes.length} bytes, ${downsampled.length} samples @ 16kHz, peak=${peakAmp.toFixed(4)}, chunkRMS=${chunkRms.toFixed(4)}`);
+            console.log(`[TrueTone] Sent WAV chunk: ${wavBytes.length} bytes, ${downsampled.length} samples @ 16kHz, rawPeak=${peakAmp.toFixed(4)}, chunkRMS=${chunkRms.toFixed(4)}`);
           }
         }
       };
 
       // Dynamics control and gain node for clean capture without clipping:
-      // Tab/system audio gets gentle 2.5x gain (+8dB) through a DynamicsCompressorNode
-      // which automatically prevents hard clipping on loud speech while keeping quiet speech clear.
       const boostGain = audioContext.createGain();
       const compressor = audioContext.createDynamicsCompressor();
-      compressor.threshold.value = -12; // dB
-      compressor.knee.value = 8;
+      compressor.threshold.value = -16; // dB
+      compressor.knee.value = 10;
       compressor.ratio.value = 4;
       compressor.attack.value = 0.003;
       compressor.release.value = 0.25;
 
       if (selectedAudioSource === 'tab') {
-        boostGain.gain.value = 2.5; // Gentle +8dB boost (safe, non-clipping)
-        console.log('[TrueTone] Applied 2.5x gentle gain boost with dynamics compressor for tab audio');
+        boostGain.gain.value = 3.5; // +11 dB clean boost
+        console.log('[TrueTone] Applied 3.5x gain boost with dynamics compressor for tab audio');
       } else {
-        boostGain.gain.value = 1.0;
+        boostGain.gain.value = 1.2;
       }
 
-      // Connect: source -> boostGain -> compressor -> scriptProcessor -> silentOutput -> destination
-      // Also: source -> analyser (already connected above)
-      const silentGain = audioContext.createGain();
-      silentGain.gain.value = 0.0;
+      // Keep-Alive Gain Node:
+      // Connecting to destination with 0.00001 (-100dB, 100% inaudible)
+      // prevents Chromium from hibernating/pausing the audio thread when switching tabs!
+      const keepAliveGain = audioContext.createGain();
+      keepAliveGain.gain.value = 0.00001;
+
       sourceNode.connect(boostGain);
       boostGain.connect(compressor);
       compressor.connect(scriptProcessor);
-      scriptProcessor.connect(silentGain);
-      silentGain.connect(audioContext.destination);
+      scriptProcessor.connect(keepAliveGain);
+      keepAliveGain.connect(audioContext.destination);
 
     } catch (err) {
       console.warn('Audio capture setup failed:', err);
@@ -660,6 +804,18 @@ function endLiveIpCall() {
   if (label) {
     label.innerText = 'STANDBY / NO SIGNAL';
     label.style.color = 'var(--text-muted)';
+  }
+  const sourceLabel = document.getElementById('liveSourceLabel');
+  if (sourceLabel) sourceLabel.innerText = 'AUDIO SOURCE: STANDBY';
+  const sourceBadge = document.getElementById('liveSourceBadge');
+  if (sourceBadge) {
+    sourceBadge.style.background = '#94a3b8';
+    sourceBadge.style.boxShadow = 'none';
+  }
+  const telemLabel = document.getElementById('liveFrequencyTelemetry');
+  if (telemLabel) {
+    telemLabel.innerText = 'FREQ SPECTRUM: 60 Hz – 8.0 kHz';
+    telemLabel.style.color = 'var(--accent-cyan)';
   }
 
   document.getElementById('btnStartCall').style.display = 'inline-flex';
