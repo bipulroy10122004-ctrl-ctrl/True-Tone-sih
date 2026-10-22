@@ -20,13 +20,11 @@
       <!-- Mode Selector Tabs -->
       <div class="tabs">
         <button class="tab-btn active" id="tabLiveCall" onclick="switchTab('livecall')">📞 Live IP Call Gateway</button>
-        <button class="tab-btn" id="tabSimulator" onclick="switchTab('simulator')">🚀 Quick Simulator</button>
         <button class="tab-btn" id="tabUpload" onclick="switchTab('upload')">📁 Custom Audio Upload</button>
       </div>
 
       <!-- Tab Views -->
       {% include "components/live_call.html" %}
-      {% include "components/simulator.html" %}
       {% include "components/upload.html" %}
 
       <!-- Real-Time Verdict & Confidence Gauge -->

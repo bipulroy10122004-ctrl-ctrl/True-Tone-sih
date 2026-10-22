@@ -55,6 +55,50 @@
       <button class="btn-unblock" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;" onclick="retryTabAudioCapture()">🔁 Try Again</button>
     </div>
   </div>
+<!-- AI Voice Detection Interactive Confirmation Modal -->
+<div class="modal-overlay" id="aiVoiceAlertModal">
+  <div class="modal-box" style="position: relative; max-width: 520px; border: 1px solid rgba(244, 63, 94, 0.45); box-shadow: 0 25px 60px rgba(244, 63, 94, 0.25); background: #0f172a; padding: 2rem;">
+    <!-- Cross mark button at top right corner -->
+    <button type="button" onclick="closeAiVoiceAlertModal()" style="position: absolute; top: 1.15rem; right: 1.15rem; background: transparent; border: none; color: #94a3b8; font-size: 1.6rem; line-height: 1; cursor: pointer; padding: 0.2rem 0.5rem; border-radius: 6px; transition: all 0.2s ease;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.color='#94a3b8'; this.style.background='transparent'" title="Exit dialog" aria-label="Close dialog">
+      &times;
+    </button>
+
+    <div style="display: flex; align-items: center; gap: 0.85rem; margin-bottom: 1.15rem;">
+      <span style="display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 12px; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.35); font-size: 1.5rem;">
+        🤖
+      </span>
+      <div>
+        <span style="font-size: 0.72rem; font-family: var(--font-mono); font-weight: 700; color: var(--accent-crimson); text-transform: uppercase; letter-spacing: 0.06em;">AI Voice Detected</span>
+        <h3 style="margin: 0.15rem 0 0 0; font-size: 1.25rem; color: #fff; font-weight: 700;">This caller is most likely an AI</h3>
+      </div>
+    </div>
+
+    <!-- Acoustic Diagnostic Telemetry -->
+    <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.15rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; margin-bottom: 0.45rem;">
+        <span style="color: var(--text-muted);">Caller Network IP:</span>
+        <span id="aiAlertCallerIp" style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-cyan);">198.51.100.110</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
+        <span style="color: var(--text-muted);">Acoustic Confidence:</span>
+        <span id="aiAlertConfidence" style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-crimson);">94.5% AI Voice</span>
+      </div>
+    </div>
+
+    <p style="font-size: 0.865rem; color: #cbd5e1; line-height: 1.55; margin-bottom: 1.5rem;">
+      This incoming call may be an automated bank notification, an official IVR service, a marketing call, or an AI synthetic voice clone. How would you like to handle this caller?
+    </p>
+
+    <!-- Interactive Actions -->
+    <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+      <button type="button" class="btn-block-action" onclick="trustCurrentCaller()" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); padding: 0.65rem 1.25rem; font-size: 0.865rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.28)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.15)'">
+        ✅ I Trust the Caller
+      </button>
+      <button type="button" class="btn-block-action" onclick="endCallAndBlockCaller()" style="background: var(--accent-crimson); color: #fff; border: 1px solid var(--accent-crimson); padding: 0.65rem 1.25rem; font-size: 0.865rem; font-weight: 600; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(244, 63, 94, 0.35); transition: all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+        🛑 End Call and Block
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- Floating Toast Notifications Container -->

@@ -7,9 +7,15 @@ let liveSocket = null;
 let callTimerInterval = null;
 let callSeconds = 0;
 
+// Interactive AI Voice Alert & Trust Management State
+let trustedCallIps = new Set();
+let activeAiAlertIp = null;
+let aiAlertCooldownUntil = 0;
+
 document.addEventListener('DOMContentLoaded', () => {
   refreshAllData();
   populateAudioDevices();
+  selectAudioSource('tab');
   // Poll telemetry and blocklist every 3.5 seconds
   setInterval(refreshAllData, 3500);
 
@@ -49,29 +55,24 @@ async function populateAudioDevices() {
 // Tab Navigation
 function switchTab(mode) {
   const tabLive = document.getElementById('tabLiveCall');
-  const tabSim = document.getElementById('tabSimulator');
   const tabUp = document.getElementById('tabUpload');
   
   const viewLive = document.getElementById('viewLiveCall');
-  const viewSim = document.getElementById('viewSimulator');
   const viewUp = document.getElementById('viewUpload');
 
-  [tabLive, tabSim, tabUp].forEach(t => t && t.classList.remove('active'));
-  [viewLive, viewSim, viewUp].forEach(v => v && (v.style.display = 'none'));
+  [tabLive, tabUp].forEach(t => t && t.classList.remove('active'));
+  [viewLive, viewUp].forEach(v => v && (v.style.display = 'none'));
 
   if (mode === 'livecall') {
-    tabLive.classList.add('active');
-    viewLive.style.display = 'block';
-  } else if (mode === 'simulator') {
-    tabSim.classList.add('active');
-    viewSim.style.display = 'block';
+    if (tabLive) tabLive.classList.add('active');
+    if (viewLive) viewLive.style.display = 'block';
   } else {
-    tabUp.classList.add('active');
-    viewUp.style.display = 'block';
+    if (tabUp) tabUp.classList.add('active');
+    if (viewUp) viewUp.style.display = 'block';
   }
 }
 
-let selectedAudioSource = 'mic';
+let selectedAudioSource = 'tab';
 let simVoiceType = 'spoof';
 let audioContext = null;
 let mediaStream = null;
@@ -83,9 +84,12 @@ let animFrameId = null;
 // Audio Source Selection
 function selectAudioSource(source) {
   selectedAudioSource = source;
-  document.getElementById('sourceMic').classList.toggle('selected', source === 'mic');
-  document.getElementById('sourceTab').classList.toggle('selected', source === 'tab');
-  document.getElementById('sourceSim').classList.toggle('selected', source === 'sim');
+  const micEl = document.getElementById('sourceMic');
+  if (micEl) micEl.classList.toggle('selected', source === 'mic');
+  const tabEl = document.getElementById('sourceTab');
+  if (tabEl) tabEl.classList.toggle('selected', source === 'tab');
+  const simEl = document.getElementById('sourceSim');
+  if (simEl) simEl.classList.toggle('selected', source === 'sim');
 
   const simPicker = document.getElementById('simulatedSubPicker');
   if (simPicker) {
@@ -107,13 +111,22 @@ function selectAudioSource(source) {
   if (sourceLabel) {
     if (source === 'tab') {
       sourceLabel.innerText = 'AUDIO SOURCE: 🔊 TAP CALL TAB / SYSTEM (READY)';
-      if (sourceBadge) sourceBadge.style.background = '#a855f7';
+      if (sourceBadge) {
+        sourceBadge.style.background = '#a855f7';
+        sourceBadge.style.boxShadow = '0 0 6px #a855f7';
+      }
     } else if (source === 'mic') {
       sourceLabel.innerText = 'AUDIO SOURCE: 🎙️ LIVE MICROPHONE (READY)';
-      if (sourceBadge) sourceBadge.style.background = '#00f2fe';
+      if (sourceBadge) {
+        sourceBadge.style.background = '#00f2fe';
+        sourceBadge.style.boxShadow = '0 0 6px #00f2fe';
+      }
     } else {
       sourceLabel.innerText = 'AUDIO SOURCE: ⚡ SIMULATED FEED (READY)';
-      if (sourceBadge) sourceBadge.style.background = '#f43f5e';
+      if (sourceBadge) {
+        sourceBadge.style.background = '#f43f5e';
+        sourceBadge.style.boxShadow = '0 0 6px #f43f5e';
+      }
     }
   }
 }
@@ -364,9 +377,9 @@ async function startLiveIpCall() {
         const deviceId = document.getElementById('audioDeviceSelect')?.value;
         const audioConstraints = {
           channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
         };
         if (deviceId && deviceId !== 'default') {
           audioConstraints.deviceId = { exact: deviceId };
@@ -495,11 +508,12 @@ async function startLiveIpCall() {
       const streamChannels = trackSettings.channelCount || 1;
       const procChannels = Math.min(streamChannels, 2);
 
-      // Accumulate 1.5 seconds of audio at the native rate, with 0.75s overlap
-      // This sends a fresh chunk every 750ms for near real-time live threat verdicts!
-      const targetSeconds = 1.5;
+      // Accumulate audio chunks:
+      // For Live Microphone: 2.5s window with 1.5s overlap gives complete speech context without dominating edge padding
+      // For Call Tab Audio: 1.5s window with 0.75s overlap preserved exactly as requested
+      const targetSeconds = selectedAudioSource === 'mic' ? 2.5 : 1.5;
       const targetChunkSamples = Math.round(nativeSr * targetSeconds);
-      const overlapSamples = Math.round(nativeSr * 0.75);
+      const overlapSamples = selectedAudioSource === 'mic' ? Math.round(nativeSr * 1.5) : Math.round(nativeSr * 0.75);
 
       scriptProcessor = audioContext.createScriptProcessor(4096, procChannels, 1);
       window._activeScriptProcessor = scriptProcessor;
@@ -564,14 +578,25 @@ async function startLiveIpCall() {
           }
           const chunkRms = Math.sqrt(sumSquaresChunk / downsampled.length);
 
-          // Speech-gated normalization:
-          // Accurately scales remote caller voice (even if quiet from WhatsApp/Meet)
-          // up to optimal reference level (0.75) without digital clipping
-          if (peakAmp >= 0.003 && chunkRms >= 0.0004) {
-            const targetPeak = 0.75;
-            const normGain = Math.min(25.0, targetPeak / Math.max(peakAmp, 0.005));
-            for (let i = 0; i < downsampled.length; i++) {
-              downsampled[i] = Math.max(-1.0, Math.min(1.0, downsampled[i] * normGain));
+          if (selectedAudioSource === 'tab') {
+            // CALL TAB AUDIO (UNCHANGED):
+            if (peakAmp >= 0.003 && chunkRms >= 0.0004) {
+              const targetPeak = 0.75;
+              const normGain = Math.min(25.0, targetPeak / Math.max(peakAmp, 0.005));
+              for (let i = 0; i < downsampled.length; i++) {
+                downsampled[i] = Math.max(-1.0, Math.min(1.0, downsampled[i] * normGain));
+              }
+            }
+          } else {
+            // LIVE AUDIO (MICROPHONE):
+            // Speech-Gated: Only apply gentle gain if real voice is present (RMS >= 0.010, Peak >= 0.035).
+            // Ambient room noise / fan hum / silence remains unboosted at true low level so VAD correctly identifies idle/silence!
+            if (peakAmp >= 0.035 && chunkRms >= 0.010) {
+              const targetPeak = 0.75;
+              const normGain = Math.min(4.0, targetPeak / Math.max(peakAmp, 0.12));
+              for (let i = 0; i < downsampled.length; i++) {
+                downsampled[i] = Math.max(-1.0, Math.min(1.0, downsampled[i] * normGain));
+              }
             }
           }
 
@@ -583,31 +608,41 @@ async function startLiveIpCall() {
         }
       };
 
-      // Dynamics control and gain node for clean capture without clipping:
-      const boostGain = audioContext.createGain();
-      const compressor = audioContext.createDynamicsCompressor();
-      compressor.threshold.value = -16; // dB
-      compressor.knee.value = 10;
-      compressor.ratio.value = 4;
-      compressor.attack.value = 0.003;
-      compressor.release.value = 0.25;
-
-      if (selectedAudioSource === 'tab') {
-        boostGain.gain.value = 3.5; // +11 dB clean boost
-        console.log('[TrueTone] Applied 3.5x gain boost with dynamics compressor for tab audio');
-      } else {
-        boostGain.gain.value = 1.2;
-      }
-
       // Keep-Alive Gain Node:
       // Connecting to destination with 0.00001 (-100dB, 100% inaudible)
       // prevents Chromium from hibernating/pausing the audio thread when switching tabs!
       const keepAliveGain = audioContext.createGain();
       keepAliveGain.gain.value = 0.00001;
 
-      sourceNode.connect(boostGain);
-      boostGain.connect(compressor);
-      compressor.connect(scriptProcessor);
+      if (selectedAudioSource === 'tab') {
+        // CALL TAB AUDIO ROUTING (UNCHANGED):
+        const boostGain = audioContext.createGain();
+        const compressor = audioContext.createDynamicsCompressor();
+        compressor.threshold.value = -16; // dB
+        compressor.knee.value = 10;
+        compressor.ratio.value = 4;
+        compressor.attack.value = 0.003;
+        compressor.release.value = 0.25;
+        boostGain.gain.value = 3.5; // +11 dB clean boost
+        console.log('[TrueTone] Applied 3.5x gain boost with dynamics compressor for tab audio');
+
+        sourceNode.connect(boostGain);
+        boostGain.connect(compressor);
+        compressor.connect(scriptProcessor);
+      } else {
+        // LIVE AUDIO / MICROPHONE ROUTING:
+        // Hardware lowpass anti-aliasing filter at 7500 Hz prevents frequencies above Nyquist (8kHz) from folding into voice band.
+        // Direct clean path without dynamics compressor preserves natural vocal dynamics & acoustic timbre.
+        const lowpass = audioContext.createBiquadFilter();
+        lowpass.type = 'lowpass';
+        lowpass.frequency.value = 7500;
+        lowpass.Q.value = 0.707;
+
+        sourceNode.connect(lowpass);
+        lowpass.connect(scriptProcessor);
+        console.log('[TrueTone] Live Microphone routing active with 7500Hz anti-aliasing filter');
+      }
+
       scriptProcessor.connect(keepAliveGain);
       keepAliveGain.connect(audioContext.destination);
 
@@ -698,7 +733,10 @@ function handleLiveCallEvent(data) {
   const bannerIcon = document.getElementById('liveBannerIcon');
   const bannerMsg = document.getElementById('liveBannerMsg');
 
-  if (data.event === 'AMBIENT_LISTENING') {
+  if (data.event === 'AI_VOICE_ALERT') {
+    handleAiVoiceAlert(data);
+    return;
+  } else if (data.event === 'AMBIENT_LISTENING') {
     statusText.innerText = '🎙️ LISTENING · WAITING FOR VOICE';
     pulseDot.className = 'call-pulse-dot active';
     banner.className = 'live-detection-banner';
@@ -1262,6 +1300,162 @@ function closeTabAudioHelpModal() {
 function retryTabAudioCapture() {
   closeTabAudioHelpModal();
   startLiveIpCall();
+}
+
+// ============================================================================
+// Interactive AI Voice Alert Modal Handlers
+// ============================================================================
+
+function handleAiVoiceAlert(data) {
+  const ip = data.caller_ip || document.getElementById('liveCallerIp')?.value?.trim() || 'Unknown IP';
+  const conf = data.spoof_percentage || (data.detection?.spoof_percentage) || 85.0;
+
+  // Render detection graph and result card live
+  if (data.detection) {
+    renderResult({
+      status: 'SUCCESS',
+      caller_ip: ip,
+      ai_detection: data.detection
+    });
+  }
+
+  // If user already marked this IP as trusted for this session, do not interrupt
+  if (trustedCallIps.has(ip)) {
+    console.log(`[TrueTone] Caller IP ${ip} is marked as trusted. Suppressing alert popup.`);
+    return;
+  }
+
+  // Prevent popup spamming: don't reopen if already open or within cooldown period
+  const modal = document.getElementById('aiVoiceAlertModal');
+  if (modal && modal.classList.contains('active')) {
+    return;
+  }
+  if (Date.now() < aiAlertCooldownUntil) {
+    return;
+  }
+
+  activeAiAlertIp = ip;
+  const ipEl = document.getElementById('aiAlertCallerIp');
+  if (ipEl) ipEl.innerText = ip;
+  const confEl = document.getElementById('aiAlertConfidence');
+  if (confEl) confEl.innerText = `${conf.toFixed(1)}% AI Voice`;
+
+  // Update in-call status bar (keep call running)
+  const statusText = document.getElementById('callStatusText');
+  const pulseDot = document.getElementById('callPulseDot');
+  const banner = document.getElementById('liveDetectionBanner');
+  const bannerIcon = document.getElementById('liveBannerIcon');
+  const bannerMsg = document.getElementById('liveBannerMsg');
+
+  if (statusText) statusText.innerText = '⚠️ AI VOICE DETECTED · AWAITING USER DECISION';
+  if (pulseDot) pulseDot.className = 'call-pulse-dot danger';
+  if (banner) banner.className = 'live-detection-banner warning';
+  if (bannerIcon) bannerIcon.innerText = '🤖';
+  if (bannerMsg) {
+    bannerMsg.innerHTML = `<strong>POTENTIAL AI CALLER:</strong> This caller is most likely an AI (${conf.toFixed(1)}%). Awaiting user decision: <em>End Call & Block</em> or <em>Trust Caller</em>.`;
+  }
+
+  playThreatAlertSound();
+
+  if (modal) {
+    modal.classList.add('active');
+  }
+}
+
+function closeAiVoiceAlertModal() {
+  const modal = document.getElementById('aiVoiceAlertModal');
+  if (modal) modal.classList.remove('active');
+  // Cooldown so subsequent frames in this call don't immediately reopen the popup
+  aiAlertCooldownUntil = Date.now() + 20000;
+}
+
+function trustCurrentCaller() {
+  const targetIp = activeAiAlertIp || document.getElementById('liveCallerIp')?.value?.trim();
+  if (targetIp) {
+    trustedCallIps.add(targetIp);
+  }
+  closeAiVoiceAlertModal();
+
+  const statusText = document.getElementById('callStatusText');
+  const pulseDot = document.getElementById('callPulseDot');
+  const banner = document.getElementById('liveDetectionBanner');
+  const bannerIcon = document.getElementById('liveBannerIcon');
+  const bannerMsg = document.getElementById('liveBannerMsg');
+
+  if (statusText) statusText.innerText = '🛡️ USER TRUST OVERRIDE · CALL PERMITTED';
+  if (pulseDot) pulseDot.className = 'call-pulse-dot active';
+  if (banner) banner.className = 'live-detection-banner safe';
+  if (bannerIcon) bannerIcon.innerText = '✅';
+  if (bannerMsg) {
+    bannerMsg.innerHTML = `<strong>CALLER TRUSTED:</strong> You permitted this call. In-call monitoring continues in background for <code>${targetIp}</code>.`;
+  }
+
+  showToast(`Caller ${targetIp} marked as trusted. Call permitted.`, 'success');
+}
+
+async function endCallAndBlockCaller() {
+  const targetIp = activeAiAlertIp || document.getElementById('liveCallerIp')?.value?.trim();
+  closeAiVoiceAlertModal();
+
+  // 1. Immediately terminate the live audio stream
+  endLiveIpCall();
+
+  // 2. Quarantine IP at Firewall
+  if (targetIp) {
+    try {
+      await fetch('/api/block-manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ip: targetIp,
+          reason: "Confirmed AI Voice: User clicked 'End Call and Block'",
+          duration_seconds: 86400
+        })
+      });
+      showToast(`Call ended and IP ${targetIp} quarantined at Firewall.`, 'danger');
+      await refreshAllData();
+    } catch (err) {
+      console.error('Error blocking caller IP:', err);
+      showToast(`Call ended. Could not block IP: ${err}`, 'warning');
+    }
+  } else {
+    showToast('Call ended.', 'info');
+  }
+
+  const statusText = document.getElementById('callStatusText');
+  const pulseDot = document.getElementById('callPulseDot');
+  const banner = document.getElementById('liveDetectionBanner');
+  const bannerIcon = document.getElementById('liveBannerIcon');
+  const bannerMsg = document.getElementById('liveBannerMsg');
+
+  if (statusText) statusText.innerText = '🛑 CALL TERMINATED & IP BANNED BY USER';
+  if (pulseDot) pulseDot.className = 'call-pulse-dot danger';
+  if (banner) banner.className = 'live-detection-banner danger';
+  if (bannerIcon) bannerIcon.innerText = '🛑';
+  if (bannerMsg) {
+    bannerMsg.innerHTML = `<strong>CALL BLOCKED:</strong> Session terminated and caller IP <code>${targetIp}</code> quarantined at Firewall by user command.`;
+  }
+}
+
+function triggerDemoAiAlert() {
+  const ip = document.getElementById('liveCallerIp')?.value?.trim() || '198.51.100.110';
+  // Allow demo to trigger smoothly
+  trustedCallIps.delete(ip);
+  aiAlertCooldownUntil = 0;
+
+  handleAiVoiceAlert({
+    caller_ip: ip,
+    spoof_percentage: 96.4,
+    detection: {
+      is_spoof: true,
+      spoof_percentage: 96.4,
+      risk_level: "HIGH",
+      verdict: "SYNTHETIC AI VOICE / SPOOF",
+      feature_latency_ms: 12.8,
+      forward_latency_ms: 3.9,
+      total_latency_ms: 16.7
+    }
+  });
 }
 
 

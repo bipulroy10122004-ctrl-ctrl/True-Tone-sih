@@ -327,26 +327,23 @@ async def websocket_live_call(websocket: WebSocket, caller_ip: Optional[str] = "
                             })
                         elif detection["is_spoof"]:
                             consecutive_spoof_hits += 1
-                            # Enforce threat neutralization ONLY on sustained synthetic speech (>= 2 consecutive speech frames)
-                            # to prevent isolated ambient transient spikes from falsely dropping legitimate calls.
-                            if consecutive_spoof_hits >= 2:
-                                threat_resp = blocker.process_ai_detection_result(
-                                    ip=caller_ip,
-                                    detection_result=detection,
-                                    simulate_ip=True
-                                )
+                            spoof_pct = detection.get("spoof_percentage", 0.0)
+                            # Enforce threat neutralization on sustained synthetic speech (>= 2 frames for clear spoof >= 80%, or >= 3 frames for >= 60%)
+                            # to prevent isolated ambient transients from dropping legitimate calls.
+                            is_sustained_threat = (consecutive_spoof_hits >= 2 and spoof_pct >= 80.0) or (consecutive_spoof_hits >= 3 and spoof_pct >= 60.0)
+                            if is_sustained_threat:
+                                # DO NOT immediately block the IP or drop the call.
+                                # Send AI_VOICE_ALERT to notify the user and open the confirmation popup:
+                                # ("End Call and Block" vs "I Trust the Caller").
                                 await websocket.send_json({
-                                    "event": "CALL_TERMINATED_IP_BANNED",
-                                    "status": "THREAT_NEUTRALIZED",
+                                    "event": "AI_VOICE_ALERT",
+                                    "status": "AI_VOICE_SUSPECTED",
                                     "verdict": "SYNTHETIC AI VOICE / SPOOF",
                                     "spoof_percentage": detection["spoof_percentage"],
                                     "caller_ip": caller_ip,
-                                    "message": f"DEEPFAKE ALERT! Sustained synthetic AI voice detected on {caller_ip} ({detection['spoof_percentage']}%). Call terminated & IP quarantined.",
-                                    "detection": detection,
-                                    "block_record": threat_resp.get("block_record")
+                                    "message": f"AI Voice Alert! Caller is most likely an AI ({detection['spoof_percentage']}%). Awaiting user confirmation.",
+                                    "detection": detection
                                 })
-                                await websocket.close(code=4403, reason="AI Deepfake Detected: Caller IP Banned")
-                                break
                             else:
                                 await websocket.send_json({
                                     "event": "THREAT_SUSPECTED",

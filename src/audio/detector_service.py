@@ -85,11 +85,24 @@ def detect_voice_activity(audio_source, amp_thresh: float = 0.008, rms_thresh: f
         num_frames = max(1, 1 + (len(y) - frame_len) // hop_len)
         frame_rmss = np.array([np.sqrt(np.mean(y[i * hop_len : i * hop_len + frame_len] ** 2)) for i in range(num_frames)])
 
-        # Robust noise floor estimation:
-        # Handles both intermittent speech (speech bursts over quiet background)
-        # AND continuous speech (where lower percentile is also speech)
-        noise_floor = float(np.percentile(frame_rmss, 15))
         mean_rms = float(np.mean(frame_rmss))
+        std_rms = float(np.std(frame_rmss))
+        cv = float(std_rms / (mean_rms + 1e-9))
+        peak_rms = float(np.max(frame_rmss))
+        peak_ratio = float(peak_rms / (mean_rms + 1e-9))
+
+        # 3. Reject quiet room noise / low-level hiss
+        if mean_rms < 0.008 and max_amp < 0.035:
+            print(f"[VAD] AMBIENT NOISE (low energy murmur): max_amp={max_amp:.5f}, mean_rms={mean_rms:.5f}")
+            return False, {"reason": "low_energy_ambient", "max_amp": max_amp, "rms": rms, "mean_rms": mean_rms}
+
+        # 4. Reject stationary mechanical noise (laptop fan, AC, mic hiss have constant RMS, cv < 0.22)
+        if cv < 0.22 or peak_ratio < 1.40:
+            print(f"[VAD] AMBIENT NOISE (stationary envelope cv={cv:.3f}, peak_ratio={peak_ratio:.3f}): max_amp={max_amp:.5f}, rms={rms:.5f}")
+            return False, {"reason": "stationary_noise_floor", "max_amp": max_amp, "rms": rms, "cv": cv, "peak_ratio": peak_ratio}
+
+        # Robust noise floor estimation:
+        noise_floor = float(np.percentile(frame_rmss, 15))
         # Adaptive speech threshold: does not overshoot when caller speaks continuously
         speech_thresh = max(0.002, min(noise_floor * 1.25, mean_rms * 0.6))
 
@@ -100,6 +113,7 @@ def detect_voice_activity(audio_source, amp_thresh: float = 0.008, rms_thresh: f
             return False, {"reason": "stationary_noise_floor", "max_amp": max_amp, "rms": rms, "noise_floor": noise_floor}
 
         pitch_peaks = []
+        pitch_lags = []
         voice_band_energies = []
         spectral_flatnesses = []
         n_fft = 512
@@ -118,8 +132,12 @@ def detect_voice_activity(audio_source, amp_thresh: float = 0.008, rms_thresh: f
             corr = corr[len(corr) // 2 :]
             if corr[0] > 1e-12:
                 norm_corr = corr / corr[0]
-                max_p = np.max(norm_corr[32 : min(230, len(norm_corr))])
-                pitch_peaks.append(max_p)
+                search_band = norm_corr[32 : min(230, len(norm_corr))]
+                if len(search_band) > 0:
+                    max_idx = int(np.argmax(search_band))
+                    max_p = float(search_band[max_idx])
+                    pitch_peaks.append(max_p)
+                    pitch_lags.append(32 + max_idx)
 
             # Spectral energy and flatness
             spec = np.abs(np.fft.rfft(frame * window, n=n_fft)) ** 2
@@ -130,6 +148,10 @@ def detect_voice_activity(audio_source, amp_thresh: float = 0.008, rms_thresh: f
             geo = np.exp(np.mean(np.log(spec + 1e-12)))
             ari = np.mean(spec) + 1e-12
             spectral_flatnesses.append(geo / ari)
+
+        if len(pitch_lags) >= 10 and float(np.std(pitch_lags)) < 1.0:
+            print(f"[VAD] AMBIENT NOISE (mechanical hum lag_std={np.std(pitch_lags):.2f}): max_amp={max_amp:.5f}, rms={rms:.5f}")
+            return False, {"reason": "stationary_mechanical_hum", "max_amp": max_amp, "rms": rms, "lag_std": float(np.std(pitch_lags))}
 
         if len(pitch_peaks) == 0:
             print(f"[VAD] AMBIENT NOISE (stationary background): max_amp={max_amp:.5f}, rms={rms:.5f}, noise_floor={noise_floor:.5f}")
@@ -234,7 +256,7 @@ def extract_lfcc_from_bytes(audio_bytes, max_frames=400, n_lfcc=20):
     t_frames = full_feat.shape[0]
     if t_frames < max_frames:
         pad_width = max_frames - t_frames
-        full_feat = np.pad(full_feat, ((0, pad_width), (0, 0)), mode='edge')
+        full_feat = np.pad(full_feat, ((0, pad_width), (0, 0)), mode='wrap')
     else:
         full_feat = full_feat[:max_frames, :]
 
@@ -266,8 +288,8 @@ class AudioSpoofInferenceEngine:
             checkpoint = torch.load(self.model_path, map_location=self.device, weights_only=False)
             self.model.load_state_dict(checkpoint["model_state_dict"])
             if self.threshold is None:
-                # Calibrated operational threshold: 0.50 provides optimal separation between bonafide human and AI spoof
-                self.threshold = checkpoint.get("optimal_threshold", 0.50)
+                # Operational threshold: 0.50 provides calibrated separation between bonafide human (<15%) and AI spoof (>=50%)
+                self.threshold = 0.50
             self.epoch = checkpoint.get("epoch", 15)
             self.best_eer = checkpoint.get("best_eer", 0.13)
             print(f"[AudioSpoofInferenceEngine] Loaded model checkpoint from {self.model_path} "
@@ -339,13 +361,13 @@ class AudioSpoofInferenceEngine:
         # 3. Decision Logic & Risk Scoring
         is_spoof = bool(prob >= self.threshold)
 
-        if prob >= 0.98:
+        if prob >= 0.90:
             risk_level = "CRITICAL"
         elif prob >= self.threshold:
             risk_level = "HIGH"
-        elif prob >= 0.50:
+        elif prob >= 0.35:
             risk_level = "SUSPICIOUS"
-        elif prob >= 0.20:
+        elif prob >= 0.15:
             risk_level = "LOW"
         else:
             risk_level = "SAFE"

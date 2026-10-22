@@ -126,11 +126,11 @@ def extract_lfcc(file_path, max_frames=400, n_lfcc=20):
     # Compute Delta and Delta-Delta (Velocity + Acceleration)
     full_feat = compute_deltas(lfcc_base, order=2)
 
-    # Fixed-length alignment: repeat-pad or truncate to max_frames (4.0 seconds)
+    # Fixed-length alignment: wrap-pad or truncate to max_frames (4.0 seconds)
     t_frames = full_feat.shape[0]
     if t_frames < max_frames:
         pad_width = max_frames - t_frames
-        full_feat = np.pad(full_feat, ((0, pad_width), (0, 0)), mode='edge')
+        full_feat = np.pad(full_feat, ((0, pad_width), (0, 0)), mode='wrap')
     else:
         full_feat = full_feat[:max_frames, :]
 
