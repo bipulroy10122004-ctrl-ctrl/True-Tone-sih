@@ -16,7 +16,7 @@ if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
 from model import AudioSpoofDetector
-from features import extract_lfcc, pre_emphasis, linear_filter_bank, compute_deltas
+from features import extract_lfcc, pre_emphasis, linear_filter_bank, compute_deltas, trim_leading_dead_air
 import scipy.fftpack
 
 DEFAULT_MODEL_PATH = os.path.abspath(
@@ -231,6 +231,8 @@ def extract_lfcc_from_bytes(audio_bytes, max_frames=400, n_lfcc=20):
         norm_gain = min(50.0, max(0.1, 0.85 / max_amp))
         y = (y * norm_gain).astype(np.float32)
 
+    # Align speech onset by trimming leading dead-air silence
+    y = trim_leading_dead_air(y, sr=sr)
 
     y = pre_emphasis(y)
     frame_len = int(0.025 * sr)

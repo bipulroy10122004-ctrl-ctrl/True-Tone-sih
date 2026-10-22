@@ -67,10 +67,30 @@ def check_audio_energy(y: np.ndarray, amp_thresh: float = 0.005, rms_thresh: flo
     is_silent = bool(max_amp < amp_thresh and rms < rms_thresh)
     return is_silent, max_amp, rms
 
+def trim_leading_dead_air(y: np.ndarray, sr: int = 16000, thresh: float = 0.012, frame_ms: int = 25, hop_ms: int = 10) -> np.ndarray:
+    """
+    Trims leading unvoiced silence and dead-air so that speech features align at frame 0.
+    Preserves a 2-frame (20ms) margin before speech onset to retain initial consonant attack.
+    If no speech exceeds threshold, leaves signal intact.
+    """
+    if y is None or len(y) == 0:
+        return y
+    frame_len = int(frame_ms * sr / 1000)
+    hop_len = int(hop_ms * sr / 1000)
+    if len(y) <= frame_len:
+        return y
+    num_frames = max(1, (len(y) - frame_len) // hop_len)
+    for i in range(num_frames):
+        seg = y[i * hop_len : i * hop_len + frame_len]
+        if np.sqrt(np.mean(seg ** 2)) >= thresh:
+            start_sample = max(0, (i - 2) * hop_len)
+            return y[start_sample:]
+    return y
+
 def extract_lfcc(file_path, max_frames=400, n_lfcc=20):
     """
     Reads an audio file, automatically resamples to 16kHz, applies peak normalization,
-    and computes LFCC + Delta + Delta-Delta features.
+    aligns speech onset, and computes LFCC + Delta + Delta-Delta features.
     Output:
         Tensor of shape (max_frames, n_lfcc * 3) -> Default (400, 60)
     """
@@ -96,6 +116,8 @@ def extract_lfcc(file_path, max_frames=400, n_lfcc=20):
         norm_gain = min(50.0, max(0.1, 0.85 / max_amp))
         y = (y * norm_gain).astype(np.float32)
 
+    # Align speech onset by trimming leading dead-air silence
+    y = trim_leading_dead_air(y, sr=sr)
 
     # Pre-emphasis
     y = pre_emphasis(y)

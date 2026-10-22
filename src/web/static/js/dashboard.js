@@ -2,6 +2,7 @@
 
 let currentSampleType = 'spoof';
 let currentLiveMode = 'spoof';
+let currentLiveCaptureMode = 'native'; // 'native' (Windows WASAPI System Audio) or 'browser' (getDisplayMedia)
 let selectedFile = null;
 let liveSocket = null;
 let callTimerInterval = null;
@@ -15,12 +16,97 @@ let aiAlertCooldownUntil = 0;
 document.addEventListener('DOMContentLoaded', () => {
   refreshAllData();
   populateAudioDevices();
+  loadSystemAudioDevices();
+  selectLiveCaptureMode('native');
   selectAudioSource('tab');
   // Poll telemetry and blocklist every 3.5 seconds
   setInterval(refreshAllData, 3500);
 
   setupDropzone();
 });
+
+function selectLiveCaptureMode(mode) {
+  currentLiveCaptureMode = mode;
+  const cardNative = document.getElementById('sourceNative');
+  const cardBrowser = document.getElementById('sourceBrowserTab');
+  const badgeNative = document.getElementById('badgeNative');
+  const badgeBrowser = document.getElementById('badgeBrowser');
+  const devGroup = document.getElementById('nativeDeviceGroup');
+  const sourceLabel = document.getElementById('liveSourceLabel');
+  const sourceBadge = document.getElementById('liveSourceBadge');
+
+  if (mode === 'native') {
+    if (cardNative) {
+      cardNative.className = 'sample-card selected';
+      cardNative.style.borderColor = 'rgba(16, 185, 129, 0.45)';
+      cardNative.style.background = 'rgba(16, 185, 129, 0.08)';
+    }
+    if (cardBrowser) {
+      cardBrowser.className = 'sample-card';
+      cardBrowser.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+      cardBrowser.style.background = 'rgba(255, 255, 255, 0.02)';
+    }
+    if (badgeNative) {
+      badgeNative.innerText = '● ACTIVE';
+      badgeNative.style.color = 'var(--accent-emerald)';
+    }
+    if (badgeBrowser) {
+      badgeBrowser.innerText = 'STANDBY';
+      badgeBrowser.style.color = 'var(--text-muted)';
+    }
+    if (devGroup) devGroup.style.display = 'block';
+    if (sourceLabel) sourceLabel.innerText = 'AUDIO SOURCE: 🔊 WINDOWS SYSTEM AUDIO (WASAPI LOOPBACK)';
+    if (sourceBadge) {
+      sourceBadge.style.background = '#10b981';
+      sourceBadge.style.boxShadow = '0 0 8px #10b981';
+    }
+  } else {
+    if (cardNative) {
+      cardNative.className = 'sample-card';
+      cardNative.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+      cardNative.style.background = 'rgba(255, 255, 255, 0.02)';
+    }
+    if (cardBrowser) {
+      cardBrowser.className = 'sample-card selected';
+      cardBrowser.style.borderColor = 'rgba(168, 85, 247, 0.45)';
+      cardBrowser.style.background = 'rgba(168, 85, 247, 0.08)';
+    }
+    if (badgeNative) {
+      badgeNative.innerText = 'STANDBY';
+      badgeNative.style.color = 'var(--text-muted)';
+    }
+    if (badgeBrowser) {
+      badgeBrowser.innerText = '● ACTIVE';
+      badgeBrowser.style.color = 'var(--accent-purple)';
+    }
+    if (devGroup) devGroup.style.display = 'none';
+    if (sourceLabel) sourceLabel.innerText = 'AUDIO SOURCE: 🌐 CHROME TAB AUDIO';
+    if (sourceBadge) {
+      sourceBadge.style.background = '#a855f7';
+      sourceBadge.style.boxShadow = '0 0 8px #a855f7';
+    }
+  }
+}
+
+async function loadSystemAudioDevices() {
+  const sel = document.getElementById('systemAudioDeviceSelect');
+  if (!sel) return;
+  try {
+    const res = await fetch('/api/system-audio/devices');
+    const json = await res.json();
+    if (json.devices && json.devices.length > 0) {
+      sel.innerHTML = '<option value="">🔊 Default System Audio Output (Recommended)</option>';
+      json.devices.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.innerText = (d.is_default ? '🔊 [DEFAULT] ' : '🔈 ') + d.name;
+        sel.appendChild(opt);
+      });
+    }
+  } catch (err) {
+    console.warn('Failed to load system audio devices:', err);
+  }
+}
 
 // Enumerate local audio devices (Microphones, Headsets, Stereo Mix loopback)
 async function populateAudioDevices() {
@@ -353,12 +439,128 @@ function startCanvasVisualizer() {
   render();
 }
 
+// Native System Audio Loopback Interception (WASAPI Loopback)
+async function startNativeSystemAudioCall(callerIp) {
+  const statusText = document.getElementById('callStatusText');
+  const pulseDot = document.getElementById('callPulseDot');
+  const timer = document.getElementById('callTimer');
+  const banner = document.getElementById('liveDetectionBanner');
+  const bannerIcon = document.getElementById('liveBannerIcon');
+  const bannerMsg = document.getElementById('liveBannerMsg');
+  const btnStart = document.getElementById('btnStartCall');
+  const btnEnd = document.getElementById('btnEndCall');
+  const sourceLabel = document.getElementById('liveSourceLabel');
+  const sourceBadge = document.getElementById('liveSourceBadge');
+  const deviceSelect = document.getElementById('systemAudioDeviceSelect');
+  const deviceId = deviceSelect?.value || null;
+
+  btnStart.style.display = 'none';
+  btnEnd.style.display = 'inline-flex';
+  statusText.innerText = 'INITIALIZING SYSTEM AUDIO LOOPBACK...';
+  pulseDot.className = 'call-pulse-dot active';
+
+  callSeconds = 0;
+  clearInterval(callTimerInterval);
+  callTimerInterval = setInterval(() => {
+    callSeconds++;
+    const m = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+    const s = String(callSeconds % 60).padStart(2, '0');
+    timer.innerText = `${m}:${s}`;
+  }, 1000);
+
+  try {
+    const res = await fetch('/api/system-audio/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        caller_ip: callerIp,
+        device_id: deviceId,
+        auto_ban: true
+      })
+    });
+    const json = await res.json();
+    if (sourceLabel) sourceLabel.innerText = `AUDIO SOURCE: 🔊 ${json.device_name || 'SYSTEM AUDIO LOOPBACK'}`;
+    if (sourceBadge) {
+      sourceBadge.style.background = '#10b981';
+      sourceBadge.style.boxShadow = '0 0 8px #10b981';
+    }
+  } catch (err) {
+    console.error('Failed to start system audio loopback on backend:', err);
+    showToast('Failed to start system audio capture: ' + err.message, 'danger');
+    endLiveIpCall();
+    return;
+  }
+
+  // Connect WebSocket to live telemetry stream
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = `${wsProtocol}//${window.location.host}/ws/system-audio`;
+  liveSocket = new WebSocket(wsUrl);
+
+  liveSocket.onopen = () => {
+    statusText.innerText = 'WASAPI LOOPBACK ACTIVE: ' + callerIp;
+    bannerIcon.innerText = '🔊';
+    bannerMsg.innerText = 'Sniffing remote caller voice via Windows System Audio loopback... Deepfake inspection running.';
+    showToast('Windows System Audio capture active! Monitoring caller voice.', 'success');
+  };
+
+  liveSocket.onmessage = (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      if (msg.event === 'DETECTION_UPDATE' && msg.data) {
+        const d = msg.data;
+        updateAudioSignalMeter(d.audio_level_rms || 0);
+
+        let callEvent = null;
+        if (d.is_speech && d.is_spoof) {
+          callEvent = {
+            event: 'AI_VOICE_ALERT',
+            status: 'AI_VOICE_SUSPECTED',
+            caller_ip: callerIp,
+            spoof_percentage: d.spoof_percentage,
+            detection: d,
+            message: `Deepfake alert on ${callerIp} (${d.spoof_percentage}%).`
+          };
+        } else if (d.is_speech && !d.is_spoof) {
+          callEvent = {
+            event: 'VOICE_VERIFIED_AUTHENTIC',
+            status: 'CALL_PERMITTED',
+            caller_ip: callerIp,
+            spoof_percentage: d.spoof_percentage,
+            detection: d,
+            message: `Natural human vocal tract verified on ${callerIp} (${d.spoof_percentage}% risk).`
+          };
+        } else {
+          callEvent = {
+            event: 'AMBIENT_LISTENING',
+            status: 'LISTENING_ACTIVE',
+            caller_ip: callerIp,
+            spoof_percentage: 0.0,
+            detection: d,
+            message: `Ambient background / inter-speech pause on ${callerIp}. Listening for voice...`
+          };
+        }
+        handleLiveCallEvent(callEvent);
+      }
+    } catch (e) {
+      console.warn('Error handling system audio telemetry:', e);
+    }
+  };
+
+  liveSocket.onclose = () => {
+    endLiveIpCall();
+  };
+}
+
 // Start Real-Time Live In-Call Audio Interception
 async function startLiveIpCall() {
   const callerIp = document.getElementById('liveCallerIp').value.trim() || '198.51.100.110';
   // Reset alert cooldown & trusted status for new call session so flagged caller prompts popup
   aiAlertCooldownUntil = 0;
   trustedCallIps.delete(callerIp);
+
+  if (currentLiveCaptureMode === 'native') {
+    return startNativeSystemAudioCall(callerIp);
+  }
 
   const statusText = document.getElementById('callStatusText');
   const pulseDot = document.getElementById('callPulseDot');
@@ -807,6 +1009,10 @@ function playThreatAlertSound() {
 }
 
 function endLiveIpCall() {
+  if (currentLiveCaptureMode === 'native') {
+    fetch('/api/system-audio/stop', { method: 'POST' }).catch(() => {});
+  }
+
   if (liveSocket && liveSocket.readyState === WebSocket.OPEN) {
     try {
       liveSocket.send(JSON.stringify({ command: 'end_call' }));

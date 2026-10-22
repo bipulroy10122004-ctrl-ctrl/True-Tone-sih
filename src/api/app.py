@@ -27,6 +27,7 @@ if os.path.join(SRC_DIR, "security") not in sys.path:
     sys.path.insert(0, os.path.join(SRC_DIR, "security"))
 
 from audio.detector_service import get_inference_engine
+from audio.system_audio_analyzer import get_system_audio_analyzer
 from security.ip_blocker import get_ip_blocker
 from security.middleware import IPBlockerSecurityMiddleware, extract_client_ip
 
@@ -66,6 +67,11 @@ class ManualBlockRequest(BaseModel):
 class SimulateCallRequest(BaseModel):
     caller_ip: str
     sample_type: str  # "spoof" or "bonafide"
+
+class StartSystemAudioRequest(BaseModel):
+    caller_ip: Optional[str] = "198.51.100.110"
+    device_id: Optional[str] = None
+    auto_ban: Optional[bool] = True
 
 # --- Web UI Routes ---
 
@@ -481,4 +487,106 @@ async def get_wavefake_benchmark():
             data = json.load(f)
         return {"status": "SUCCESS", "benchmark": data}
     return {"status": "NOT_RUN", "message": "Benchmark summary not found."}
+
+
+# --- Native System Audio Loopback API & Real-Time Stream ---
+
+@app.get("/api/system-audio/devices")
+async def list_system_audio_devices():
+    """Returns all available system audio playback devices for loopback tapping."""
+    analyzer = get_system_audio_analyzer()
+    return {"devices": analyzer.get_available_output_devices()}
+
+
+@app.get("/api/system-audio/status")
+async def get_system_audio_status():
+    """Returns current system audio loopback capture status and latest analysis."""
+    analyzer = get_system_audio_analyzer()
+    return {
+        "is_capturing": analyzer.is_capturing,
+        "device_name": analyzer.active_device_name,
+        "latest": analyzer.get_latest_metrics()
+    }
+
+
+@app.post("/api/system-audio/start")
+async def start_system_audio_monitor(req: StartSystemAudioRequest = StartSystemAudioRequest()):
+    """
+    Starts real-time system audio loopback capture.
+    Taps speaker output to analyze remote caller voice from WhatsApp Web / IP calls.
+    """
+    analyzer = get_system_audio_analyzer()
+    blocker = get_ip_blocker()
+    caller_ip = req.caller_ip or "198.51.100.110"
+
+    def on_audio_result(data):
+        if req.auto_ban and data.get("is_speech") and data.get("is_spoof"):
+            blocker.process_ai_detection_result(
+                ip=caller_ip,
+                detection_result=data,
+                simulate_ip=True
+            )
+
+    analyzer.register_callback(on_audio_result)
+    started = analyzer.start_capture(device_id=req.device_id)
+
+    return {
+        "status": "STARTED" if started else "ALREADY_RUNNING",
+        "device_name": analyzer.active_device_name,
+        "caller_ip": caller_ip,
+        "is_capturing": analyzer.is_capturing
+    }
+
+
+@app.post("/api/system-audio/stop")
+async def stop_system_audio_monitor():
+    """Stops the real-time system audio loopback capture."""
+    analyzer = get_system_audio_analyzer()
+    analyzer.stop_capture()
+    return {
+        "status": "STOPPED",
+        "is_capturing": False
+    }
+
+
+@app.websocket("/ws/system-audio")
+async def websocket_system_audio(websocket: WebSocket):
+    """
+    Streams live system audio loopback detection telemetry, VAD events,
+    and deepfake model verdicts directly to client dashboards.
+    """
+    await websocket.accept()
+    analyzer = get_system_audio_analyzer()
+
+    q: asyncio.Queue = asyncio.Queue(maxsize=50)
+    loop = asyncio.get_running_loop()
+
+    def listener(data):
+        try:
+            loop.call_soon_threadsafe(
+                lambda: q.put_nowait(data) if not q.full() else None
+            )
+        except Exception:
+            pass
+
+    analyzer.register_callback(listener)
+    try:
+        await websocket.send_json({
+            "event": "STATUS",
+            "is_capturing": analyzer.is_capturing,
+            "device_name": analyzer.active_device_name,
+            "metrics": analyzer.get_latest_metrics()
+        })
+
+        while True:
+            item = await q.get()
+            await websocket.send_json({
+                "event": "DETECTION_UPDATE",
+                "data": item
+            })
+    except (WebSocketDisconnect, Exception):
+        pass
+    finally:
+        analyzer.unregister_callback(listener)
+
 
