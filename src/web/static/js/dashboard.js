@@ -133,8 +133,8 @@ function selectAudioSource(source) {
 
 function setSimVoiceType(type) {
   simVoiceType = type;
-  document.getElementById('simSpoofBtn').classList.toggle('active', type === 'spoof');
-  document.getElementById('simHumanBtn').classList.toggle('active', type === 'bonafide');
+  document.getElementById('simSpoofBtn')?.classList.toggle('active', type === 'spoof');
+  document.getElementById('simHumanBtn')?.classList.toggle('active', type === 'bonafide');
 }
 
 // Downsample audio buffer from source sample rate to target sample rate
@@ -356,6 +356,10 @@ function startCanvasVisualizer() {
 // Start Real-Time Live In-Call Audio Interception
 async function startLiveIpCall() {
   const callerIp = document.getElementById('liveCallerIp').value.trim() || '198.51.100.110';
+  // Reset alert cooldown & trusted status for new call session so flagged caller prompts popup
+  aiAlertCooldownUntil = 0;
+  trustedCallIps.delete(callerIp);
+
   const statusText = document.getElementById('callStatusText');
   const pulseDot = document.getElementById('callPulseDot');
   const timer = document.getElementById('callTimer');
@@ -733,7 +737,7 @@ function handleLiveCallEvent(data) {
   const bannerIcon = document.getElementById('liveBannerIcon');
   const bannerMsg = document.getElementById('liveBannerMsg');
 
-  if (data.event === 'AI_VOICE_ALERT') {
+  if (data.event === 'AI_VOICE_ALERT' || data.event === 'THREAT_SUSPECTED') {
     handleAiVoiceAlert(data);
     return;
   } else if (data.event === 'AMBIENT_LISTENING') {
@@ -910,10 +914,12 @@ function handleFileSelected(event) {
 
 // Execute Simulation
 async function runSimulation() {
-  const callerIp = document.getElementById('simCallerIp').value.trim() || '198.51.100.42';
+  const callerIp = document.getElementById('simCallerIp')?.value?.trim() || '198.51.100.42';
   const btn = document.getElementById('btnRunSim');
-  btn.disabled = true;
-  btn.innerHTML = '<span>⏳</span><span>Analyzing Voice Stream with ML Model...</span>';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span><span>Analyzing Voice Stream with ML Model...</span>';
+  }
 
   try {
     const res = await fetch('/api/simulate-call', {
@@ -931,8 +937,10 @@ async function runSimulation() {
   } catch (err) {
     alert('Simulation request failed: ' + err);
   } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<span>⚡</span><span>Transmit Voice Stream & Test Defense</span>';
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>⚡</span><span>Transmit Voice Stream & Test Defense</span>';
+    }
   }
 }
 
@@ -1106,6 +1114,7 @@ function renderBlocklist(list) {
 
 function renderIncidentFeed(logs) {
   const feed = document.getElementById('incidentFeed');
+  if (!feed) return;
   if (logs.length === 0) {
     feed.innerHTML = `
       <div style="text-align: center; color: var(--text-muted); padding: 1.5rem;">

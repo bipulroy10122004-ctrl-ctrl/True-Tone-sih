@@ -13,6 +13,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from features import extract_lfcc
 from model import AudioSpoofDetector
+from predict import load_model
 
 DEFAULT_MODEL_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "models", "best_audio_spoof_model.pt"))
 
@@ -20,19 +21,9 @@ def predict_single_audio(audio_path, model_path=DEFAULT_MODEL_PATH):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Loading model on: {device}...")
 
-    # Load Model
-    model = AudioSpoofDetector(input_dim=60, hidden_dim=128).to(device)
-    threshold = 0.50
-
-    if os.path.exists(model_path):
-        checkpoint = torch.load(model_path, map_location=device, weights_only=True)
-        model.load_state_dict(checkpoint["model_state_dict"])
-        threshold = checkpoint.get("optimal_threshold", 0.50)
-        print(f"Loaded trained checkpoint: {model_path} (Opt Threshold: {threshold:.4f})")
-    else:
-        print(f"Warning: Checkpoint {model_path} not found. Running with initialized weights for demonstration.")
-
-    model.eval()
+    # Load Model using calibrated loader
+    model, threshold = load_model(model_path, device=device)
+    print(f"Loaded trained model (Operational Threshold: {threshold:.4f})")
 
     # 1. Measure Feature Extraction Latency
     t0 = time.perf_counter()

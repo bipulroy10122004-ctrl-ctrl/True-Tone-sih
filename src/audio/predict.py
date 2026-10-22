@@ -58,12 +58,12 @@ def load_model(
 def get_default_model(device: Optional[torch.device] = None) -> tuple[AudioSpoofDetector, float]:
     """Returns cached singleton model and threshold to avoid redundant disk I/O."""
     global _GLOBAL_MODEL, _GLOBAL_THRESH
-    if _GLOBAL_MODEL is None:
+    if _GLOBAL_MODEL is None or _GLOBAL_THRESH is None:
         _GLOBAL_MODEL, _GLOBAL_THRESH = load_model(device=device)
     return _GLOBAL_MODEL, _GLOBAL_THRESH
 
 def sanitize_and_pad_features(
-    features: Union[torch.Tensor, np.ndarray],
+    features: Optional[Union[torch.Tensor, np.ndarray]],
     expected_frames: int = 400,
     expected_channels: int = 60
 ) -> torch.Tensor:
@@ -155,7 +155,7 @@ def predict_features(
     # Single-sample vs batch
     if probs.ndim == 0 or len(probs) == 1:
         prob = float(probs.item() if probs.ndim == 0 else probs[0])
-        is_spoof = bool(prob >= threshold)
+        is_spoof = prob >= threshold
         verdict = "SYNTHETIC AI VOICE / SPOOF" if is_spoof else "AUTHENTIC HUMAN / BONAFIDE"
         return {
             "is_spoof": is_spoof,

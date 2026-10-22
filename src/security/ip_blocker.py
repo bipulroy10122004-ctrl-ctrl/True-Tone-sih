@@ -186,9 +186,10 @@ class IPBlockerManager:
         }
         return record
 
-    def unblock_ip(self, ip: str, reason: str = "Manual Admin Override") -> bool:
+    def unblock_ip(self, ip: str, reason: Optional[str] = "Manual Admin Override") -> bool:
         """Removes an IP from the active blocklist and in-memory cache."""
-        ip = str(ip).strip()
+        ip = ip.strip()
+        effective_reason = reason if reason is not None else "Manual Admin Override"
         with self._get_connection() as conn:
             c = conn.cursor()
             c.execute("DELETE FROM blocked_ips WHERE ip = ?", (ip,))
@@ -207,8 +208,8 @@ class IPBlockerManager:
             event_type="UNBLOCK_OVERRIDE",
             spoof_probability=0.0,
             verdict="UNBLOCKED",
-            action_taken=f"IP Restored: {reason}",
-            details={"reason": reason}
+            action_taken=f"IP Restored: {effective_reason}",
+            details={"reason": effective_reason}
         )
         return True
 

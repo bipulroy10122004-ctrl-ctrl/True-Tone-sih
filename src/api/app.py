@@ -261,6 +261,8 @@ async def websocket_live_call(websocket: WebSocket, caller_ip: Optional[str] = "
     is identified mid-call, the session is terminated and the caller IP is instantly banned.
     """
     await websocket.accept()
+    if caller_ip is None:
+        caller_ip = "198.51.100.55"
     blocker = get_ip_blocker()
     detector = get_inference_engine()
 
@@ -327,33 +329,16 @@ async def websocket_live_call(websocket: WebSocket, caller_ip: Optional[str] = "
                             })
                         elif detection["is_spoof"]:
                             consecutive_spoof_hits += 1
-                            spoof_pct = detection.get("spoof_percentage", 0.0)
-                            # Enforce threat neutralization on sustained synthetic speech (>= 2 frames for clear spoof >= 80%, or >= 3 frames for >= 60%)
-                            # to prevent isolated ambient transients from dropping legitimate calls.
-                            is_sustained_threat = (consecutive_spoof_hits >= 2 and spoof_pct >= 80.0) or (consecutive_spoof_hits >= 3 and spoof_pct >= 60.0)
-                            if is_sustained_threat:
-                                # DO NOT immediately block the IP or drop the call.
-                                # Send AI_VOICE_ALERT to notify the user and open the confirmation popup:
-                                # ("End Call and Block" vs "I Trust the Caller").
-                                await websocket.send_json({
-                                    "event": "AI_VOICE_ALERT",
-                                    "status": "AI_VOICE_SUSPECTED",
-                                    "verdict": "SYNTHETIC AI VOICE / SPOOF",
-                                    "spoof_percentage": detection["spoof_percentage"],
-                                    "caller_ip": caller_ip,
-                                    "message": f"AI Voice Alert! Caller is most likely an AI ({detection['spoof_percentage']}%). Awaiting user confirmation.",
-                                    "detection": detection
-                                })
-                            else:
-                                await websocket.send_json({
-                                    "event": "THREAT_SUSPECTED",
-                                    "status": "ANALYZING_PHONEMES",
-                                    "verdict": "SUSPECTED SYNTHETIC PHONEMES",
-                                    "spoof_percentage": detection["spoof_percentage"],
-                                    "caller_ip": caller_ip,
-                                    "message": f"Elevated synthetic acoustic signature on {caller_ip} ({detection['spoof_percentage']}%). Cross-verifying across adjacent speech frames...",
-                                    "detection": detection
-                                })
+                            # Immediate threat notification: Trigger AI_VOICE_ALERT so the confirmation popup displays to the operator
+                            await websocket.send_json({
+                                "event": "AI_VOICE_ALERT",
+                                "status": "AI_VOICE_SUSPECTED",
+                                "verdict": "SYNTHETIC AI VOICE / SPOOF",
+                                "spoof_percentage": detection["spoof_percentage"],
+                                "caller_ip": caller_ip,
+                                "message": f"AI Voice Alert! Caller {caller_ip} is flagged as a synthetic AI voice ({detection['spoof_percentage']}%). Awaiting user confirmation.",
+                                "detection": detection
+                            })
                         else:
                             consecutive_spoof_hits = 0
                             # Authentic voice: keep call alive
@@ -387,17 +372,15 @@ async def websocket_live_call(websocket: WebSocket, caller_ip: Optional[str] = "
 
                     if detection["is_spoof"]:
                         await websocket.send_json({
-                            "event": "CALL_TERMINATED_IP_BANNED",
-                            "status": "THREAT_NEUTRALIZED",
+                            "event": "AI_VOICE_ALERT",
+                            "status": "AI_VOICE_SUSPECTED",
                             "verdict": "SYNTHETIC AI VOICE / SPOOF",
                             "spoof_percentage": detection["spoof_percentage"],
                             "caller_ip": caller_ip,
-                            "message": f"DEEPFAKE ALERT! Synthetic AI voice detected on {caller_ip}. Call terminated & IP quarantined.",
+                            "message": f"DEEPFAKE ALERT! Synthetic AI voice detected on {caller_ip} ({detection['spoof_percentage']}%). Awaiting user decision.",
                             "detection": detection,
                             "block_record": threat_resp.get("block_record")
                         })
-                        await websocket.close(code=4403, reason="AI Deepfake Detected: Caller IP Banned")
-                        break
                     else:
                         await websocket.send_json({
                             "event": "VOICE_VERIFIED_AUTHENTIC",
@@ -432,7 +415,8 @@ async def get_blocked_ips():
 async def unblock_ip(req: UnblockRequest):
     blocker = get_ip_blocker()
     clean_ip = req.ip.strip()
-    success = blocker.unblock_ip(clean_ip, reason=req.reason)
+    reason = req.reason if req.reason is not None else "Manual Admin Override via Command Center"
+    success = blocker.unblock_ip(clean_ip, reason=reason)
     return {
         "status": "SUCCESS",
         "ip": clean_ip,

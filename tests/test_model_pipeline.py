@@ -227,10 +227,10 @@ class TestModelEvaluationSliceF1:
 
         assert len(y_true) >= 20, f"Insufficient evaluation slice size ({len(y_true)} samples)"
 
-        f1 = f1_score(y_true, y_pred, pos_label=1, zero_division=0)
+        f1 = f1_score(y_true, y_pred, pos_label=1, zero_division=0)  # type: ignore
         acc = accuracy_score(y_true, y_pred)
-        prec = precision_score(y_true, y_pred, pos_label=1, zero_division=0)
-        rec = recall_score(y_true, y_pred, pos_label=1, zero_division=0)
+        prec = precision_score(y_true, y_pred, pos_label=1, zero_division=0)  # type: ignore
+        rec = recall_score(y_true, y_pred, pos_label=1, zero_division=0)  # type: ignore
 
         print(f"\n[EVALUATION SLICE METRICS] Samples: {len(y_true)}")
         print(f"Accuracy:  {acc * 100:.2f}%")
@@ -280,11 +280,12 @@ class TestLiveMicrophoneAndVAD:
         import soundfile as sf
         import io
 
+        model, threshold, device = loaded_model_and_threshold
         silence = np.zeros(32000, dtype=np.float32)
         bio = io.BytesIO()
         sf.write(bio, silence, 16000, format="WAV")
 
-        res = predict(bio.getvalue())
+        res = predict(bio.getvalue(), model=model, threshold=threshold, device=device)
         assert res["is_silent"] is True, "Expected is_silent=True for zero audio"
         assert res["is_spoof"] is False, "Silence must never be flagged as an AI spoof"
         assert res["spoof_percentage"] == 0.0
@@ -310,14 +311,14 @@ class TestLiveMicrophoneAndVAD:
     def test_48khz_microphone_resampling(self, loaded_model_and_threshold):
         """Standard Windows 48kHz audio streams must be automatically resampled without error."""
         import soundfile as sf
-        import scipy.signal
+        import scipy.signal  # type: ignore
         import io
 
         model, threshold, device = loaded_model_and_threshold
 
         y, sr = sf.read(SAMPLE_BONAFIDE)
         # Upsample to 48kHz
-        y_48k = scipy.signal.resample(y, int(len(y) * 48000 / sr)).astype(np.float32)
+        y_48k = np.asarray(scipy.signal.resample(y, int(len(y) * 48000 / sr)), dtype=np.float32)
 
         bio = io.BytesIO()
         sf.write(bio, y_48k * 0.05, 48000, format="WAV")

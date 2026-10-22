@@ -1,0 +1,14 @@
+{
+  "include": [
+    "src",
+    "tests"
+  ],
+  "extraPaths": [
+    ".",
+    "src",
+    "src/audio",
+    "src/security"
+  ],
+  "pythonVersion": "3.13",
+  "reportMissingTypeStubs": false
+}
